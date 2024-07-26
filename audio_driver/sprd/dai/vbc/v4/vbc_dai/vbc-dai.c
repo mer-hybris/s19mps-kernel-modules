@@ -2955,6 +2955,11 @@ static int vbc_turning_profile_loading(const u8 *profile_data, size_t profile_si
 	struct vbc_codec_priv *vbc_codec = snd_soc_component_get_drvdata(codec);
 	struct vbc_profile *p_profile_setting = &vbc_codec->vbc_profile_setting;
 
+	if (profile_size < sizeof(p_profile_setting->hdr[profile_id])) {
+		pr_err("%s: skipping uevent write from systemd(?), due to broken API", __func__);
+		return -EINVAL;
+	}
+
 	fw_data = profile_data;
 	unalign_memcpy(&p_profile_setting->hdr[profile_id], fw_data,
 						sizeof(p_profile_setting->hdr[profile_id]));
@@ -3244,6 +3249,15 @@ static void vbc_turning_ndp_exit(void)
 	}
 }
 
+static_assert (SND_VBC_PROFILE_MAX == 4, "Extend the code below to account for SND_VBC_PROFILE_MAX != 4");
+
+#define NDP_NAME_0 (AUDIO_TURNING_PATH_BASE "0")
+#define NDP_NAME_1 (AUDIO_TURNING_PATH_BASE "1")
+#define NDP_NAME_2 (AUDIO_TURNING_PATH_BASE "2")
+#define NDP_NAME_3 (AUDIO_TURNING_PATH_BASE "3")
+
+#define SET_NDP_NAME(ndp_name, index) switch (index) { case 0: ndp_name = NDP_NAME_0; break; case 1: ndp_name = NDP_NAME_1; break; case 2: ndp_name = NDP_NAME_2; break; case 3: ndp_name = NDP_NAME_3; break; }
+
 static int vbc_turning_ndp_init(void)
 {
 	int result = 0;
@@ -3251,7 +3265,7 @@ static int vbc_turning_ndp_init(void)
 	unsigned int major = 0;
 	unsigned int minor = 0;
 	u8 index = 0;
-	char ndp_name[32];
+	char *ndp_name;
 
 	result = alloc_chrdev_region(&devid, AUD_TURNING_MINOR_START, AUD_TURNING_PRO_CNTS, AUDIO_TURNING_PATH_BASE);
 	if (result < 0) {
@@ -3276,8 +3290,7 @@ static int vbc_turning_ndp_init(void)
 			goto INIT_FAILED;
 		}
 
-		memset(&ndp_name[0], 0, sizeof(char) * 32);
-		sprintf(&ndp_name[0], "%s%d", AUDIO_TURNING_PATH_BASE, index);
+		SET_NDP_NAME(ndp_name, index);
 		pr_info("%s,ndp_name = %s !\n", __func__, ndp_name);
 		aud_turning[index].turing_class = class_create(THIS_MODULE, ndp_name);
 		if (IS_ERR(aud_turning[index].turing_class)) {
