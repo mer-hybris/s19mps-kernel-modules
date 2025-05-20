@@ -1519,7 +1519,7 @@ int sprdwl_tx_msg_func(void *pdev, struct sprdwl_msg_buf *msg)
 		}
 		sprdwl_queue_data_msg_buf(msg);
 		atomic_inc(&tx_msg->tx_list[msg->mode]->mode_list_num);
-		wl_err_ratelimited("lut=%d,qos_index=%d,tid=%d,lnum=%d,tx data num:%d\n",
+		wl_debug("lut=%d,qos_index=%d,tid=%d,lnum=%d,tx data num:%d\n",
 					   tx_msg->tx_list[msg->mode]->lut_id,
 					   qos_index, tid,
 					   atomic_read(&msg->data_list->l_num),
@@ -1664,7 +1664,7 @@ static int sprdwl_tx_work_queue(void *data)
 		}
 
 		if (intf->fw_awake == 0) {
-			printk_ratelimited("sc2355, %s, fw_awake = 0\n", __func__);
+			pr_debug_ratelimited("sc2355, %s, fw_awake = 0\n", __func__);
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
 			usleep_range_state(50, 100, TASK_UNINTERRUPTIBLE);
 #else

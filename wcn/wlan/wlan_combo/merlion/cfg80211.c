@@ -393,7 +393,7 @@ int sprdwl_init_fw(struct sprdwl_vif *vif)
 	u8 mode_opened = 0;
 	struct sprdwl_intf *intf = g_intf;
 
-	netdev_info(vif->ndev, "%s type %d, mode %d\n", __func__, type,
+	netdev_dbg(vif->ndev, "%s type %d, mode %d\n", __func__, type,
 		    vif->mode);
 
 	if (vif->mode != SPRDWL_MODE_NONE) {
@@ -435,13 +435,13 @@ int sprdwl_init_fw(struct sprdwl_vif *vif)
 	}
 	vif->ctx_id  = vif_ctx_id;
 
-	netdev_info(vif->ndev, "%s,open success type %d, mode:%d, ctx_id:%d\n",
+	netdev_dbg(vif->ndev, "%s,open success type %d, mode:%d, ctx_id:%d\n",
 		    __func__, type,
 		    vif->mode, vif->ctx_id);
 	priv->fw_stat[vif->mode] = SPRDWL_INTF_OPEN;
 
 	if (atomic_read(&intf->change_iface_block_cmd) == 1) {
-		netdev_info(vif->ndev, "block command finished!, reset change_iface_block_cmd!\n");
+		netdev_dbg(vif->ndev, "block command finished!, reset change_iface_block_cmd!\n");
 		atomic_set(&intf->change_iface_block_cmd, 0);
 	}
 	/*TODO make sure driver send buf only once*/
@@ -510,7 +510,7 @@ int sprdwl_uninit_fw(struct sprdwl_vif *vif)
 		!list_empty(&tx_msg->xmit_msg_list.to_free_list))
 		sprdwl_flush_tofreelist(tx_msg);
 
-	netdev_info(vif->ndev, "%s type %d, mode %d\n", __func__,
+	netdev_dbg(vif->ndev, "%s type %d, mode %d\n", __func__,
 		    vif->wdev.iftype, vif->mode);
 	vif->mode = SPRDWL_MODE_NONE;
 
@@ -605,7 +605,7 @@ static int sprdwl_cfg80211_change_iface(struct wiphy *wiphy,
 	struct sprdwl_intf *intf = g_intf;
 	int ret;
 
-	netdev_info(ndev, "%s type %d -> %d\n", __func__, old_type, type);
+	netdev_dbg(ndev, "%s type %d -> %d\n", __func__, old_type, type);
 
 	if (!sprdwl_is_valid_iftype(wiphy, type)) {
 		wl_err("%s unsupported interface type: %u\n", __func__, type);
@@ -629,7 +629,7 @@ static int sprdwl_cfg80211_change_iface(struct wiphy *wiphy,
 	}
 
 	if (atomic_read(&intf->power_cnt) == 1) {
-		netdev_info(ndev, "power cnt is 1, block command!\n");
+		netdev_dbg(ndev, "power cnt is 1, block command!\n");
 		atomic_set(&intf->change_iface_block_cmd, 1);
 	}
 
@@ -642,7 +642,7 @@ static int sprdwl_cfg80211_change_iface(struct wiphy *wiphy,
 	}
 
 	if (atomic_read(&intf->change_iface_block_cmd) == 1) {
-		netdev_info(vif->ndev, "block command finished!, reset change_iface_block_cmd!\n");
+		netdev_dbg(vif->ndev, "block command finished!, reset change_iface_block_cmd!\n");
                 atomic_set(&intf->change_iface_block_cmd, 0);
 	}
 
@@ -764,7 +764,7 @@ static int sprdwl_add_cipher_key(struct sprdwl_vif *vif, bool pairwise,
 	u8 *cipher_ptr = pairwise ? &vif->prwise_crypto : &vif->grp_crypto;
 	int ret = 0;
 
-	netdev_info(vif->ndev, "%s %s key_index %d\n", __func__,
+	netdev_dbg(vif->ndev, "%s %s key_index %d\n", __func__,
 		    pairwise ? "pairwise" : "group", key_index);
 
 	if (vif->key_len[pairwise][0] || vif->key_len[pairwise][1] ||
@@ -822,7 +822,7 @@ static int sprdwl_cfg80211_del_key(struct wiphy *wiphy, struct net_device *ndev,
 {
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 
-	netdev_info(ndev, "%s key_index=%d, pairwise=%d\n",
+	netdev_dbg(ndev, "%s key_index=%d, pairwise=%d\n",
 		    __func__, key_index, pairwise);
 
 	if (key_index > SPRDWL_MAX_KEY_INDEX) {
@@ -832,7 +832,7 @@ static int sprdwl_cfg80211_del_key(struct wiphy *wiphy, struct net_device *ndev,
 	}
 
 	if (!vif->key_len[pairwise][key_index]) {
-		netdev_err(ndev, "%s key index %d is empty!\n", __func__,
+		netdev_dbg(ndev, "%s key index %d is empty!\n", __func__,
 			   key_index);
 		return 0;
 	}
@@ -941,7 +941,7 @@ static int sprdwl_cfg80211_start_ap(struct wiphy *wiphy,
 	u8 fw_ver = 0, drv_ver = 0;
 #endif
 
-	netdev_info(ndev, "%s\n", __func__);
+	netdev_dbg(ndev, "%s\n", __func__);
 
 #ifdef ACS_SUPPORT
 	fw_ver = (api + WIFI_CMD_SCAN)->fw_version;
@@ -1040,7 +1040,7 @@ static int sprdwl_cfg80211_change_beacon(struct wiphy *wiphy,
 {
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 
-	netdev_info(ndev, "%s\n", __func__);
+	netdev_dbg(ndev, "%s\n", __func__);
 #ifdef DFS_MASTER
 	/*send beacon tail ie if needed*/
 	if (beacon->tail_len)
@@ -1065,7 +1065,7 @@ static int sprdwl_cfg80211_stop_ap(struct wiphy *wiphy, struct net_device *ndev)
 #ifdef DFS_MASTER
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 #endif
-	netdev_info(ndev, "%s\n", __func__);
+	netdev_dbg(ndev, "%s\n", __func__);
 #ifdef DFS_MASTER
 	sprdwl_abort_cac(vif);
 #endif
@@ -1099,12 +1099,12 @@ static int sprdwl_cfg80211_del_station(struct wiphy *wiphy,
 		goto out;
 	}
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 83)
-	netdev_info(ndev, "%s %pM reason:%d\n", __func__, params->mac,
+	netdev_dbg(ndev, "%s %pM reason:%d\n", __func__, params->mac,
 			params->reason_code);
 	sprdwl_del_station(vif->priv, vif->ctx_id, params->mac,
 			params->reason_code);
 #else
-	netdev_info(ndev, "%s %pM\n", __func__, mac);
+	netdev_dbg(ndev, "%s %pM\n", __func__, mac);
 	sprdwl_del_station(vif->priv, vif->ctx_id, mac,
 			   WLAN_REASON_DEAUTH_LEAVING);
 #endif
@@ -1222,7 +1222,7 @@ static int sprdwl_cfg80211_get_station(struct wiphy *wiphy,
 		sinfo->rxrate.legacy = rx_rate->legacy;
 	}
 
-	netdev_info(ndev, "%s signal %d noise=%d, txlegacy %d txmcs:%d txflags:0x:%x,rxlegacy %d rxmcs:%d rxflags:0x:%x\n",
+	netdev_dbg(ndev, "%s signal %d noise=%d, txlegacy %d txmcs:%d txflags:0x:%x,rxlegacy %d rxmcs:%d rxflags:0x:%x\n",
 				__func__, sinfo->signal, sta.noise, sinfo->txrate.legacy,
 				tx_rate->mcs, tx_rate->flags,
 				sinfo->rxrate.legacy,
@@ -1278,7 +1278,7 @@ static int sprdwl_cfg80211_get_station(struct wiphy *wiphy,
 		sinfo->txrate.legacy = rate->legacy;
 	}
 
-	netdev_info(ndev, "%s signal %d legacy %d mcs:%d flags:0x:%x\n",
+	netdev_dbg(ndev, "%s signal %d legacy %d mcs:%d flags:0x:%x\n",
 			__func__, sinfo->signal, sinfo->txrate.legacy,
 			rate->mcs, rate->flags);
 out:
@@ -1324,10 +1324,10 @@ void sprdwl_report_softap(struct sprdwl_vif *vif, u8 is_connect, u8 *addr,
 			netif_wake_queue(vif->ndev);
 		}
 		cfg80211_new_sta(vif->ndev, addr, &sinfo, GFP_KERNEL);
-		netdev_info(vif->ndev, "New station (%pM) connected\n", addr);
+		netdev_dbg(vif->ndev, "New station (%pM) connected\n", addr);
 	} else {
 		cfg80211_del_sta(vif->ndev, addr, GFP_KERNEL);
-		netdev_info(vif->ndev, "The station (%pM) disconnected\n",
+		netdev_dbg(vif->ndev, "The station (%pM) disconnected\n",
 			    addr);
 		trace_deauth_reason(vif->mode, 0, REMOTE_EVENT);
 	}
@@ -1367,7 +1367,7 @@ static void sprdwl_cancel_scan(struct sprdwl_vif *vif)
 			if (!list_empty(&vif->scan_head_ptr))
 				clean_scan_list(vif);
 
-			wl_err("%s:scan request addr:%p",
+			wl_debug("%s:scan request addr:%p",
 					__func__, priv->scan_request);
 			if (priv->scan_request->n_channels != 0)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
@@ -1433,11 +1433,11 @@ void sprdwl_scan_done(struct sprdwl_vif *vif, bool abort)
 			if (!list_empty(&vif->scan_head_ptr))
 				clean_scan_list(vif);
 
-			wl_err("%s:scan request addr:%p",
+			wl_debug("%s:scan request addr:%p",
 					__func__, priv->scan_request);
 			if (priv->scan_request->n_channels != 0) {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
-				netdev_info(vif->ndev, "%s scan is %s\n", __func__, abort ? "Aborted" : "Done");
+				netdev_dbg(vif->ndev, "%s scan is %s\n", __func__, abort ? "Aborted" : "Done");
 				cfg80211_scan_done(priv->scan_request, &info);
 #else
 				cfg80211_scan_done(priv->scan_request, abort);
@@ -1467,7 +1467,7 @@ void sprdwl_sched_scan_done(struct sprdwl_vif *vif, bool abort)
 #else
 			cfg80211_sched_scan_results(vif->wdev.wiphy);
 #endif
-			netdev_info(priv->sched_scan_vif->ndev,
+			netdev_dbg(priv->sched_scan_vif->ndev,
 				    "%s report result\n", __func__);
 			priv->sched_scan_request = NULL;
 			priv->sched_scan_vif = NULL;
@@ -1488,7 +1488,7 @@ void sprdwl_scan_timeout(struct timer_list *t)
 	struct api_version_t *api = (&priv->sync_api)->api_array;
 	u8 fw_ver = 0, drv_ver = 0;
 #endif
-	netdev_info(priv->scan_vif->ndev, "%s\n", __func__);
+	netdev_dbg(priv->scan_vif->ndev, "%s\n", __func__);
 
 	spin_lock_bh(&priv->scan_lock);
 	if (priv->scan_request) {
@@ -1535,7 +1535,7 @@ static int sprdwl_cfg80211_scan(struct wiphy *wiphy,
 	u8 fw_ver = 0, drv_ver = 0;
 #endif
 
-	netdev_info(vif->ndev, "%s n_channels %u\n", __func__,
+	netdev_dbg(vif->ndev, "%s n_channels %u\n", __func__,
 		    request->n_channels);
 
 	if (!sprdwl_is_valid_iftype(wiphy, request->wdev->iftype)) {
@@ -1557,7 +1557,7 @@ static int sprdwl_cfg80211_scan(struct wiphy *wiphy,
 			random_mac_flag = 1;
 			wl_err("random mac addr: %pM\n", rand_addr);
 		} else {
-			wl_err("random mac feature disabled\n");
+			wl_debug("random mac feature disabled\n");
 			random_mac_flag = 0;
 		}
 		wlan_cmd_set_rand_mac(vif->priv, vif->ctx_id,
@@ -1664,7 +1664,7 @@ static int sprdwl_cfg80211_scan(struct wiphy *wiphy,
 	priv->scan_request = request;
 	priv->scan_vif = vif;
 	spin_unlock_bh(&priv->scan_lock);
-	wl_err("%s:scan request addr:%p", __func__, request);
+	wl_debug("%s:scan request addr:%p", __func__, request);
 	mod_timer(&priv->scan_timer,
 		  jiffies + SPRDWL_SCAN_TIMEOUT_MS * HZ / 1000);
 
@@ -1810,7 +1810,7 @@ static int sprdwl_cfg80211_sched_scan_start(struct wiphy *wiphy,
 			continue;
 		}
 
-		netdev_info(ndev, "%s: channel is %d\n", __func__, ch);
+		netdev_dbg(ndev, "%s: channel is %d\n", __func__, ch);
 		if (j + 1 < TOTAL_2G_5G_CHANNEL_NUM)
 			sscan_buf->channel[j + 1] = ch;
 		j++;
@@ -1889,7 +1889,7 @@ static int sprdwl_cfg80211_disconnect(struct wiphy *wiphy,
 	enum sm_state old_state = vif->sm_state;
 	int ret;
 
-	netdev_info(ndev, "%s %s reason: %d\n", __func__, vif->ssid,
+	netdev_dbg(ndev, "%s %s reason: %d\n", __func__, vif->ssid,
 		    reason_code);
 
 	vif->sm_state = SPRDWL_DISCONNECTING;
@@ -1948,7 +1948,7 @@ static int sprdwl_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev,
 	if (sme->ie_len > 0) {
 		int i;
 
-		netdev_info(ndev, "set assoc req ie, len %zx\n", sme->ie_len);
+		netdev_dbg(ndev, "set assoc req ie, len %zx\n", sme->ie_len);
 		for (i = 0; i < sme->ie_len - 6; i++) {
 			if (sme->ie[i] == 0xDD &&
 			    sme->ie[i + 2] == 0x40 &&
@@ -1979,12 +1979,12 @@ static int sprdwl_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev,
 	}
 
 	con.wpa_versions = sprdwl_convert_wpa_version(sme->crypto.wpa_versions);
-	netdev_info(ndev, "sme->wpa versions %#x, con.wpa_version:%#x\n",
+	netdev_dbg(ndev, "sme->wpa versions %#x, con.wpa_version:%#x\n",
 		sme->crypto.wpa_versions, con.wpa_versions);
-	netdev_info(ndev, "management frame protection %#x\n", sme->mfp);
+	netdev_dbg(ndev, "management frame protection %#x\n", sme->mfp);
 	con.mfp_enable = sme->mfp;
 
-	netdev_info(ndev, "auth type %#x\n", sme->auth_type);
+	netdev_dbg(ndev, "auth type %#x\n", sme->auth_type);
 	if ((sme->auth_type == NL80211_AUTHTYPE_OPEN_SYSTEM) ||
 	    ((sme->auth_type == NL80211_AUTHTYPE_AUTOMATIC) && !is_wep))
 		con.auth_type = SPRDWL_AUTH_OPEN;
@@ -2000,7 +2000,7 @@ static int sprdwl_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev,
 		    sprdwl_parse_cipher(sme->crypto.ciphers_pairwise[0]);
 
 		if (vif->prwise_crypto != SPRDWL_CIPHER_NONE) {
-			netdev_info(ndev, "pairwise cipher %#x\n",
+			netdev_dbg(ndev, "pairwise cipher %#x\n",
 				    sme->crypto.ciphers_pairwise[0]);
 			con.pairwise_cipher = vif->prwise_crypto;
 			con.pairwise_cipher |= SPRDWL_VALID_CONFIG;
@@ -2013,7 +2013,7 @@ static int sprdwl_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev,
 	/* Set group cipher */
 	vif->grp_crypto = sprdwl_parse_cipher(sme->crypto.cipher_group);
 	if (vif->grp_crypto != SPRDWL_CIPHER_NONE) {
-		netdev_info(ndev, "group cipher %#x\n",
+		netdev_dbg(ndev, "group cipher %#x\n",
 			    sme->crypto.cipher_group);
 		con.group_cipher = vif->grp_crypto;
 		con.group_cipher |= SPRDWL_VALID_CONFIG;
@@ -2021,7 +2021,7 @@ static int sprdwl_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev,
 
 	/* Set auth key management (akm) */
 	if (sme->crypto.n_akm_suites) {
-		netdev_info(ndev, "akm suites %#x\n",
+		netdev_dbg(ndev, "akm suites %#x\n",
 			    sme->crypto.akm_suites[0]);
 		con.key_mgmt = sprdwl_parse_akm(sme->crypto.akm_suites[0]);
 		con.key_mgmt |= SPRDWL_VALID_CONFIG;
@@ -2054,7 +2054,7 @@ static int sprdwl_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev,
 			ret = -EINVAL;
 			goto err;
 		} else {
-			netdev_info(ndev, "PSK %s\n", sme->key);
+			netdev_dbg(ndev, "PSK %s\n", sme->key);
 			con.psk_len = sme->key_len;
 			memcpy(con.psk, sme->key, sme->key_len);
 		}
@@ -2068,14 +2068,14 @@ static int sprdwl_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev,
 
 			con.channel =
 			    ieee80211_frequency_to_channel(center_freq);
-			netdev_info(ndev, "channel_hint %d\n", con.channel);
+			netdev_dbg(ndev, "channel_hint %d\n", con.channel);
 		} else {
 			netdev_dbg(ndev, "No channel specified!\n");
 		}
 	} else {
 		con.channel =
 		    ieee80211_frequency_to_channel(sme->channel->center_freq);
-		netdev_info(ndev, "channel %d\n", con.channel);
+		netdev_dbg(ndev, "channel %d\n", con.channel);
 	}
 
 	/* Set BSSID */
@@ -2092,7 +2092,7 @@ static int sprdwl_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev,
 	/* Special process for WEP(WEP key must be set before essid) */
 	if (sme->crypto.cipher_group == WLAN_CIPHER_SUITE_WEP40 ||
 	    sme->crypto.cipher_group == WLAN_CIPHER_SUITE_WEP104) {
-		netdev_info(ndev, "%s WEP cipher_group\n", __func__);
+		netdev_dbg(ndev, "%s WEP cipher_group\n", __func__);
 
 		if (sme->key_len <= 0) {
 			netdev_dbg(ndev, "No key specified!\n");
@@ -2140,7 +2140,7 @@ static int sprdwl_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev,
 #endif
 		strncpy(vif->ssid, sme->ssid, sme->ssid_len);
 		vif->ssid_len = sme->ssid_len;
-		netdev_info(ndev, "%s %s\n", __func__, vif->ssid);
+		netdev_dbg(ndev, "%s %s\n", __func__, vif->ssid);
 	}
 
 	return 0;
@@ -2170,7 +2170,7 @@ static int sprdwl_cfg80211_set_pmksa(struct wiphy *wiphy,
 {
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 
-	netdev_info(ndev, "%s\n", __func__);
+	netdev_dbg(ndev, "%s\n", __func__);
 
 	return sprdwl_pmksa(vif->priv, vif->ctx_id, pmksa->bssid,
 			    pmksa->pmkid, SPRDWL_SUBCMD_SET);
@@ -2182,7 +2182,7 @@ static int sprdwl_cfg80211_del_pmksa(struct wiphy *wiphy,
 {
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 
-	netdev_info(ndev, "%s\n", __func__);
+	netdev_dbg(ndev, "%s\n", __func__);
 
 	return sprdwl_pmksa(vif->priv, vif->ctx_id, pmksa->bssid,
 			    pmksa->pmkid, SPRDWL_SUBCMD_DEL);
@@ -2193,7 +2193,7 @@ static int sprdwl_cfg80211_flush_pmksa(struct wiphy *wiphy,
 {
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 
-	netdev_info(ndev, "%s\n", __func__);
+	netdev_dbg(ndev, "%s\n", __func__);
 
 	return sprdwl_pmksa(vif->priv, vif->ctx_id, vif->bssid, NULL,
 			    SPRDWL_SUBCMD_FLUSH);
@@ -2352,7 +2352,7 @@ void sprdwl_report_scan_result(struct sprdwl_vif *vif, u16 chan, s16 rssi,
 	beacon_interval = le16_to_cpu(mgmt->u.probe_resp.beacon_int);
 	capability = le16_to_cpu(mgmt->u.probe_resp.capab_info);
 
-	netdev_info(vif->ndev, "   %s, %pM, channel %2u, signal %d\n",
+	netdev_dbg(vif->ndev, "   %s, %pM, channel %2u, signal %d\n",
 		    ieee80211_is_probe_resp(mgmt->frame_control)
 		    ? "proberesp" : "beacon   ", mgmt->bssid, chan, signal);
 
@@ -2452,7 +2452,7 @@ void sprdwl_report_connection(struct sprdwl_vif *vif,
 		}
 
 		mgmt = (struct ieee80211_mgmt *)conn_info->bea_ie;
-		netdev_info(vif->ndev, "%s update BSS %s\n", __func__,
+		netdev_dbg(vif->ndev, "%s update BSS %s\n", __func__,
 			    vif->ssid);
 		if (!mgmt) {
 			netdev_err(vif->ndev, "%s NULL frame!\n", __func__);
@@ -2550,7 +2550,7 @@ void sprdwl_report_connection(struct sprdwl_vif *vif,
 
 	if (wmm_params != NULL) {
 		for (i = 0; i < NUM_AC; i++) {
-			netdev_info(vif->ndev, "wmm_params->ac[%d].aci_aifsn: %x\n",
+			netdev_dbg(vif->ndev, "wmm_params->ac[%d].aci_aifsn: %x\n",
 					i, wmm_params->ac[i].aci_aifsn);
 			priv->wmmac.ac[i].aci_aifsn = wmm_params->ac[i].aci_aifsn;
 		}
@@ -2561,7 +2561,7 @@ void sprdwl_report_connection(struct sprdwl_vif *vif,
 
 	vif->sm_state = SPRDWL_CONNECTED;
 	memcpy(vif->bssid, conn_info->bssid, sizeof(vif->bssid));
-	netdev_info(vif->ndev, "%s %s to %s (%pM)\n", __func__,
+	netdev_dbg(vif->ndev, "%s %s to %s (%pM)\n", __func__,
 		    conn_info->status == SPRDWL_CONNECT_SUCCESS ?
 			"connect" : "roam", vif->ssid, vif->bssid);
 	return;
@@ -2595,7 +2595,7 @@ void sprdwl_report_disconnection(struct sprdwl_vif *vif, u16 reason_code)
 #else
 				      NULL, 0, GFP_KERNEL);
 #endif
-		netdev_info(vif->ndev,
+		netdev_dbg(vif->ndev,
 			    "%s %s, passive disconnection, reason_code %d\n", __func__,
 			    vif->ssid, reason_code);
 	} else if (vif->sm_state == SPRDWL_DISCONNECTING) {
@@ -2605,7 +2605,7 @@ void sprdwl_report_disconnection(struct sprdwl_vif *vif, u16 reason_code)
 #else
 				      NULL, 0, GFP_KERNEL);
 #endif
-		netdev_info(vif->ndev,
+		netdev_dbg(vif->ndev,
 			    "%s %s, active disconnection, reason_code %d\n", __func__,
 			    vif->ssid, reason_code);
 	} else {
@@ -2762,7 +2762,7 @@ static int sprdwl_cfg80211_remain_on_channel(struct wiphy *wiphy,
 	int ret;
 
 	*cookie = vif->listen_cookie = ++remain_index;
-	netdev_info(wdev->netdev, "%s %d for %dms, cookie 0x%llx\n",
+	netdev_dbg(wdev->netdev, "%s %d for %dms, cookie 0x%llx\n",
 		    __func__, chan->center_freq, duration, *cookie);
 	memcpy(&vif->listen_channel, chan, sizeof(struct ieee80211_channel));
 
@@ -2782,7 +2782,7 @@ static int sprdwl_cfg80211_cancel_remain_on_channel(struct wiphy *wiphy,
 {
 	struct sprdwl_vif *vif = container_of(wdev, struct sprdwl_vif, wdev);
 
-	netdev_info(wdev->netdev, "%s cookie 0x%llx\n", __func__, cookie);
+	netdev_dbg(wdev->netdev, "%s cookie 0x%llx\n", __func__, cookie);
 
 	return sprdwl_cancel_remain_chan(vif->priv, vif->ctx_id, cookie);
 }
@@ -2802,7 +2802,7 @@ static int sprdwl_cfg80211_mgmt_tx(struct wiphy *wiphy,
 	int ret = 0;
 
 	*cookie = ++mgmt_index;
-	netdev_info(wdev->netdev, "%s cookie %lld\n", __func__, *cookie);
+	netdev_dbg(wdev->netdev, "%s cookie %lld\n", __func__, *cookie);
 
 	sprdwl_cfg80211_dump_frame_prot_info(1, chan->center_freq, buf, len);
 	/* send tx mgmt */
@@ -2855,7 +2855,7 @@ static void sprdwl_cfg80211_mgmt_frame_register(struct wiphy *wiphy,
 			reg = 1;
 
 		frame_type = i << 4;
-		netdev_info(wdev->netdev, "frame_type %d, reg %d\n", frame_type, reg);
+		netdev_dbg(wdev->netdev, "frame_type %d, reg %d\n", frame_type, reg);
 		misc_work = sprdwl_alloc_work(sizeof(*reg_mgmt));
 		if (!misc_work) {
 			netdev_err(wdev->netdev, "%s out of memory\n", __func__);
@@ -2893,7 +2893,7 @@ static void sprdwl_cfg80211_mgmt_frame_register(struct wiphy *wiphy,
 		return;
 	}
 
-	netdev_info(wdev->netdev, "frame_type %d, reg %d\n", frame_type, reg);
+	netdev_dbg(wdev->netdev, "frame_type %d, reg %d\n", frame_type, reg);
 
 	misc_work = sprdwl_alloc_work(sizeof(*reg_mgmt));
 	if (!misc_work) {
@@ -2914,7 +2914,7 @@ static void sprdwl_cfg80211_mgmt_frame_register(struct wiphy *wiphy,
 
 void sprdwl_report_remain_on_channel_expired(struct sprdwl_vif *vif)
 {
-	netdev_info(vif->ndev, "%s\n", __func__);
+	netdev_dbg(vif->ndev, "%s\n", __func__);
 
 	cfg80211_remain_on_channel_expired(&vif->wdev, vif->listen_cookie,
 					   &vif->listen_channel, GFP_KERNEL);
@@ -2923,7 +2923,7 @@ void sprdwl_report_remain_on_channel_expired(struct sprdwl_vif *vif)
 void sprdwl_report_mgmt_tx_status(struct sprdwl_vif *vif, u64 cookie,
 				  const u8 *buf, u32 len, u8 ack)
 {
-	netdev_info(vif->ndev, "%s cookie %lld\n", __func__, cookie);
+	netdev_dbg(vif->ndev, "%s cookie %lld\n", __func__, cookie);
 
 	cfg80211_mgmt_tx_status(&vif->wdev, cookie, buf, len, ack, GFP_KERNEL);
 }
@@ -2997,7 +2997,7 @@ static int sprdwl_cfg80211_start_p2p_device(struct wiphy *wiphy,
 	struct sprdwl_intf *intf = g_intf;
 	int ret;
 
-	netdev_info(vif->ndev, "%s power on wcn (%d time)\n",
+	netdev_dbg(vif->ndev, "%s power on wcn (%d time)\n",
 			__func__, atomic_read(&intf->power_cnt));
 	ret = sprdwl_chip_set_power(intf, true);
 	if (ret)
@@ -3017,7 +3017,7 @@ static void sprdwl_cfg80211_stop_p2p_device(struct wiphy *wiphy,
 	struct sprdwl_vif *vif = container_of(wdev, struct sprdwl_vif, wdev);
 	struct sprdwl_intf *intf = g_intf;
 
-	netdev_info(vif->ndev, "%s\n", __func__);
+	netdev_dbg(vif->ndev, "%s\n", __func__);
 
 	if (atomic_read(&intf->power_cnt) == 1)
 		atomic_set(&intf->block_cmd_after_close, 1);
@@ -3026,7 +3026,7 @@ static void sprdwl_cfg80211_stop_p2p_device(struct wiphy *wiphy,
 
 	if (vif->priv->scan_request)
 		sprdwl_scan_done(vif, true);
-	netdev_info(vif->ndev, "%s power off wcn (%d time)\n",
+	netdev_dbg(vif->ndev, "%s power off wcn (%d time)\n",
 			__func__, atomic_read(&intf->power_cnt));
 	sprdwl_chip_set_power(intf, false);
 
@@ -3047,7 +3047,7 @@ static int sprdwl_cfg80211_tdls_mgmt(struct wiphy *wiphy,
 	u32 end = 0x4d3c2b1a;
 	int ret = 0;
 
-	netdev_info(ndev, "%s action_code=%d(%pM)\n", __func__,
+	netdev_dbg(ndev, "%s action_code=%d(%pM)\n", __func__,
 		    action_code, peer);
 
 	datalen = sizeof(*p) + len + sizeof(end);
@@ -3132,7 +3132,7 @@ static int sprdwl_cfg80211_tdls_oper(struct wiphy *wiphy,
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 	int ret;
 
-	netdev_info(ndev, "%s oper=%d\n", __func__, oper);
+	netdev_dbg(ndev, "%s oper=%d\n", __func__, oper);
 
 	if (oper == NL80211_TDLS_ENABLE_LINK) {
 		sprdwl_tdls_flow_flush(vif, peer, oper);
@@ -3175,7 +3175,7 @@ static int sprdwl_cfg80211_tdls_chan_switch(struct wiphy *wiphy,
 	chan = chandef->chan->hw_value;
 	band = chandef->chan->band;
 
-	netdev_info(ndev, "%s: chan=%u, band=%u\n", __func__, chan, band);
+	netdev_dbg(ndev, "%s: chan=%u, band=%u\n", __func__, chan, band);
 	return sprdwl_start_tdls_channel_switch(vif->priv, vif->ctx_id, addr,
 						chan, 0, band);
 }
@@ -3186,14 +3186,14 @@ static void sprdwl_cfg80211_tdls_cancel_chan_switch(struct wiphy *wiphy,
 {
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 
-	netdev_info(ndev, "%s\n", __func__);
+	netdev_dbg(ndev, "%s\n", __func__);
 	sprdwl_cancel_tdls_channel_switch(vif->priv, vif->ctx_id, addr);
 }
 
 void sprdwl_report_tdls(struct sprdwl_vif *vif, const u8 *peer,
 			u8 oper, u16 reason_code)
 {
-	netdev_info(vif->ndev, "%s A station (%pM)found\n", __func__, peer);
+	netdev_dbg(vif->ndev, "%s A station (%pM)found\n", __func__, peer);
 
 	cfg80211_tdls_oper_request(vif->ndev, peer, oper,
 				   reason_code, GFP_KERNEL);
@@ -3206,7 +3206,7 @@ int sprdwl_cfg80211_set_cqm_rssi_config(struct wiphy *wiphy,
 {
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 
-	netdev_info(ndev, "%s rssi_thold %d rssi_hyst %d",
+	netdev_dbg(ndev, "%s rssi_thold %d rssi_hyst %d",
 		    __func__, rssi_thold, rssi_hyst);
 
 	return sprdwl_set_cqm_rssi(vif->priv, vif->ctx_id,
@@ -3215,7 +3215,7 @@ int sprdwl_cfg80211_set_cqm_rssi_config(struct wiphy *wiphy,
 
 void sprdwl_report_cqm(struct sprdwl_vif *vif, u8 rssi_event)
 {
-	netdev_info(vif->ndev, "%s rssi_event: %d\n", __func__, rssi_event);
+	netdev_dbg(vif->ndev, "%s rssi_event: %d\n", __func__, rssi_event);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 	cfg80211_cqm_rssi_notify(vif->ndev, rssi_event, 0, GFP_KERNEL);
 #else
@@ -3228,7 +3228,7 @@ int sprdwl_cfg80211_update_ft_ies(struct wiphy *wiphy, struct net_device *ndev,
 {
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 
-	netdev_info(ndev, "%s\n", __func__);
+	netdev_dbg(ndev, "%s\n", __func__);
 
 	return sprdwl_set_roam_offload(vif->priv, vif->ctx_id,
 				       SPRDWL_ROAM_OFFLOAD_SET_FTIE,
@@ -3241,7 +3241,7 @@ static int sprdwl_cfg80211_set_qos_map(struct wiphy *wiphy,
 {
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 
-	netdev_info(ndev, "%s\n", __func__);
+	netdev_dbg(ndev, "%s\n", __func__);
 
 	return sprdwl_set_qos_map(vif->priv, vif->ctx_id, (void *)qos_map);
 }
@@ -3253,7 +3253,7 @@ static int sprdwl_cfg80211_add_tx_ts(struct wiphy *wiphy,
 {
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 
-	netdev_info(ndev, "%s\n", __func__);
+	netdev_dbg(ndev, "%s\n", __func__);
 
 	return sprdwl_add_tx_ts(vif->priv, vif->ctx_id, tsid, peer,
 				user_prio, admitted_time);
@@ -3265,7 +3265,7 @@ static int sprdwl_cfg80211_del_tx_ts(struct wiphy *wiphy,
 {
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 
-	netdev_info(ndev, "%s\n", __func__);
+	netdev_dbg(ndev, "%s\n", __func__);
 
 	return sprdwl_del_tx_ts(vif->priv, vif->ctx_id, tsid, peer);
 }
@@ -3294,7 +3294,7 @@ static int sprdwl_cfg80211_set_mac_acl(struct wiphy *wiphy,
 	}
 
 	num = acl->n_acl_entries;
-	netdev_info(ndev, "%s ACL MAC num:%d\n", __func__, num);
+	netdev_dbg(ndev, "%s ACL MAC num:%d\n", __func__, num);
 	if (num < 0 || num > vif->priv->max_acl_mac_addrs)
 		return -EINVAL;
 
@@ -3303,7 +3303,7 @@ static int sprdwl_cfg80211_set_mac_acl(struct wiphy *wiphy,
 		return -ENOMEM;
 
 	for (index = 0; index < num; index++) {
-		netdev_info(ndev, "%s  MAC: %pM\n", __func__,
+		netdev_dbg(ndev, "%s  MAC: %pM\n", __func__,
 			    &acl->mac_addrs[index]);
 		memcpy(mac_addr + index * ETH_ALEN,
 		       &acl->mac_addrs[index], ETH_ALEN);
@@ -3323,7 +3323,7 @@ int sprdwl_cfg80211_set_power_mgmt(struct wiphy *wiphy, struct net_device *ndev,
 {
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 
-	netdev_info(ndev, "%s power save status:%d\n", __func__, enabled);
+	netdev_dbg(ndev, "%s power save status:%d\n", __func__, enabled);
 	return sprdwl_power_save(vif->priv, vif->ctx_id,
 				 SPRDWL_SET_PS_STATE, enabled);
 }
@@ -3402,7 +3402,7 @@ sprdwl_cfg80211_dump_survey(struct wiphy *wiphy, struct net_device *ndev,
 		} else {
 			/* There are no more survey info in list */
 			err = -ENOENT;
-			netdev_info(vif->ndev, "%s report %d surveys\n",
+			netdev_dbg(vif->ndev, "%s report %d surveys\n",
 				    __func__, survey_count);
 			survey_count = 0;
 		}
@@ -3415,7 +3415,7 @@ out:
 		int ret = 0;
 		int survey_cnt = 0;
 
-		netdev_err(vif->ndev, "%s, idx %d, acs_scan_index: %u\n", __func__, idx, vif->acs_scan_index);
+		netdev_dbg(vif->ndev, "%s, idx %d, acs_scan_index: %u\n", __func__, idx, vif->acs_scan_index);
 		if (!list_empty(&vif->survey_info_list)) {
 			info = list_first_entry(&vif->survey_info_list,
 					struct sprdwl_survey_info_new, survey_list);
@@ -3442,7 +3442,7 @@ out:
 			survey_cnt++;
 			kfree(info);
 		} else {
-			netdev_err(vif->ndev, "%s, survey_cnt %d\n", __func__, survey_cnt);
+			netdev_dbg(vif->ndev, "%s, survey_cnt %d\n", __func__, survey_cnt);
 			ret = -ENOENT;
 		}
 

@@ -841,19 +841,19 @@ out:
 	if (vif->mode == SPRDWL_MODE_STATION ||
 		vif->mode == SPRDWL_MODE_STATION_SECOND ||
 		vif->mode == SPRDWL_MODE_P2P_CLIENT) {
-		wl_err("%s,%d,bssid not found, multicast?\n"
+		wl_debug("%s,%d,bssid not found, multicast?\n"
 		       "default of STA/GC = 0,\n",
 		       __func__, vif->ctx_id);
 		return 0;
 	}
 	if (vif->mode == SPRDWL_MODE_AP) {
-		wl_err("%s,%d,bssid not found, multicast?\n"
+		wl_debug("%s,%d,bssid not found, multicast?\n"
 		       "default of AP = 4\n",
 		       __func__, vif->ctx_id);
 		return 4;
 	}
 	if (vif->mode == SPRDWL_MODE_P2P_GO) {
-		wl_err("%s,%d,bssid not found, multicast?\n"
+		wl_debug("%s,%d,bssid not found, multicast?\n"
 		       "default of GO = 5\n",
 		       __func__, vif->ctx_id);
 		return 5;
@@ -1330,7 +1330,7 @@ static int sprdwl_sc2355_rx_handle(int chn, struct mbuf_t *head, struct mbuf_t *
 			SPRDWL_TYPE_CMD == SPRDWL_HEAD_GET_TYPE(msg->data)) {
 			wl_info("%s: channel:%d head:%p tail:%p num:%d\n",
 			__func__, chn, head->buf, tail->buf, num);
-			sprdwl_hex_dump("CMD", (unsigned char *)(msg->data), 12);
+			//print_hex_dump("CMD", (unsigned char *)(msg->data), 12);
 			wl_info("%s rsp_event_cnt %d\n", __func__, rx_if->rsp_event_cnt);
 		}
 
@@ -2393,7 +2393,7 @@ int sprdwl_dis_flush_txlist(struct sprdwl_intf *intf, u8 lut_index)
 				lut_index, __func__, __LINE__);
 		return -1;
 	}
-	wl_err("disconnect, flush qoslist, %s, %d\n", __func__, __LINE__);
+	wl_debug("disconnect, flush qoslist, %s, %d\n", __func__, __LINE__);
 	tx_msg = (struct sprdwl_tx_msg *)intf->sprdwl_tx;
 	for (i = 0; i < SPRDWL_MODE_MAX; i++)
 		for (j = 0; j < SPRDWL_AC_MAX; j++)

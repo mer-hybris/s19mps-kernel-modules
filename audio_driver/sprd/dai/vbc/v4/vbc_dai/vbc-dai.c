@@ -248,7 +248,7 @@ static int check_enable_ivs_smtpa(int scene_id, int stream,
 	case VBC_DAI_ID_FAST_P_SMART_AMP:
 	case VBC_DAI_ID_OFFLOAD:
 		enable = 1;
-		pr_info("scene %s enabled ivsense smartpa\n",
+		pr_debug("scene %s enabled ivsense smartpa\n",
 			scene_id_to_str(scene_id));
 		break;
 	default:
@@ -303,8 +303,8 @@ static int get_ivsense_adc_id(void)
 #define SPRD_VBC_ENUM(xreg, xmax, xtexts)\
 	SOC_ENUM_SINGLE(xreg, 0, xmax, xtexts)
 
-#undef sp_asoc_pr_dbg
-#define sp_asoc_pr_dbg pr_info
+//#undef sp_asoc_pr_dbg
+//#define sp_asoc_pr_dbg pr_info
 
 static const char * const dsp_loopback_type_txt[] = {
 	/* type 0, type 1, type 2 */
@@ -2886,7 +2886,7 @@ static int vbc_put_ivsence_func(struct snd_kcontrol *kcontrol,
 		return -EINVAL;
 	}
 	enable = ucontrol->value.enumerated.item[0];
-	pr_info("%s, %s = %s\n",
+	pr_debug("%s, %s = %s\n",
 		__func__, "ivsence func dsp", texts->texts[enable]);
 	vbc_codec->is_use_ivs_smtpa = enable;
 	iv_adc_id = get_ivsense_adc_id();
@@ -2996,7 +2996,7 @@ static int vbc_turning_profile_loading(const u8 *profile_data, size_t profile_si
 	goto profile_out;
 
 profile_out:
-	sp_asoc_pr_info("%s, return %i\n", __func__, ret);
+	sp_asoc_pr_dbg("%s, return %i\n", __func__, ret);
 	return ret;
 }
 
@@ -3012,7 +3012,7 @@ static int vbc_turning_profile_get(u8 *profile_data, size_t profile_size, struct
 	fw_data = profile_data;
 	if (profile_size <= sizeof(p_profile_setting->hdr[profile_id])) {
 		unalign_memcpy(fw_data, &p_profile_setting->hdr[profile_id], profile_size);
-		pr_info("%s, only get profile %s party header! size=%d\n", __func__, vbc_get_profile_name(profile_id), profile_size);
+		pr_debug("%s, only get profile %s party header! size=%d\n", __func__, vbc_get_profile_name(profile_id), profile_size);
 		return profile_size;
 	} else {
 		unalign_memcpy(fw_data, &p_profile_setting->hdr[profile_id],
@@ -3023,12 +3023,12 @@ static int vbc_turning_profile_get(u8 *profile_data, size_t profile_size, struct
 		if (p_profile_setting->data[profile_id] != NULL) {
 			if (profile_size - offset >= len) {
 				unalign_memcpy(fw_data + offset, p_profile_setting->data[profile_id], len);
-				pr_info("%s, get profile %s full header and data! header=%d, data=%d, require size %d\n",
+				pr_debug("%s, get profile %s full header and data! header=%d, data=%d, require size %d\n",
 					__func__, vbc_get_profile_name(profile_id), offset, len, profile_size);
 				return offset + len;
 			} else {
 				unalign_memcpy(fw_data + offset, p_profile_setting->data[profile_id], profile_size - offset);
-				pr_info("%s, get profile %s header and party data! header=%d, data=%d, data size %d\n",
+				pr_debug("%s, get profile %s header and party data! header=%d, data=%d, data size %d\n",
 					__func__, vbc_get_profile_name(profile_id), offset, profile_size - offset, len);
 				return profile_size;
 			}
@@ -3043,7 +3043,7 @@ static int vbc_turning_profile_get(u8 *profile_data, size_t profile_size, struct
 
 static int vbc_turning_ndp_open(struct inode *inode, struct file *file)
 {
-    pr_info("%s: opened\n", __func__);
+    pr_debug("%s: opened\n", __func__);
     return 0;
 }
 
@@ -3067,7 +3067,7 @@ static ssize_t vbc_turning_ndp_write(struct file *file, const char __user *data_
 		return -ENODEV;
 	}
 
-	pr_info("%s, eq turning data_p = %p, size =%ld, profile id = %d\n", __func__, data_p, data_size, profile_id);
+	pr_debug("%s, eq turning data_p = %p, size =%ld, profile id = %d\n", __func__, data_p, data_size, profile_id);
 	buf_p = vmalloc(data_size);
 	if (NULL == buf_p) {
 		pr_err("%s, Error: vmalloc eq data buffer failed, size is %ld\n", __func__, data_size);
@@ -3088,7 +3088,7 @@ static ssize_t vbc_turning_ndp_write(struct file *file, const char __user *data_
 	}
 
 	vfree(buf_p);
-	pr_info("%s: load eq from turning success.\n", __func__);
+	pr_debug("%s: load eq from turning success.\n", __func__);
 	return data_size;
 }
 
@@ -3112,7 +3112,7 @@ static ssize_t vbc_turning_ndp_read(struct file *file, char __user *data_p, size
 		return -ENODEV;
 	}
 
-	pr_info("%s, eq turning data_p = %p, size =%ld, profile id = %d\n", __func__, data_p, data_size, profile_id);
+	pr_debug("%s, eq turning data_p = %p, size =%ld, profile id = %d\n", __func__, data_p, data_size, profile_id);
 	buf_p = vmalloc(data_size);
 	if (NULL == buf_p) {
 		pr_err("%s, Error: vmalloc eq data buffer failed, size is %ld\n", __func__, data_size);
@@ -3133,13 +3133,13 @@ static ssize_t vbc_turning_ndp_read(struct file *file, char __user *data_p, size
 	}
 
 	vfree(buf_p);
-	pr_info("%s: get eq to upper layer success, size %d.\n", __func__, ret);
+	pr_debug("%s: get eq to upper layer success, size %d.\n", __func__, ret);
 	return ret;
 }
 
 static int vbc_turning_ndp_release(struct inode *inode, struct file *file)
 {
-    pr_info("%s: Enter\n", __func__);
+    pr_debug("%s: Enter\n", __func__);
 
     return 0;
 }
@@ -3233,7 +3233,7 @@ static void vbc_turning_ndp_exit(void)
 {
 	u8 index = 0;
 
-	pr_info("%s: Enter.\n", __func__);
+	pr_debug("%s: Enter.\n", __func__);
 	for (index = 0; index < AUD_TURNING_PRO_CNTS; index++) {
 		if (aud_turning[index].ready) {
 			if (NULL != aud_turning[index].turing_class) {
@@ -3274,11 +3274,11 @@ static int vbc_turning_ndp_init(void)
 	}
 	major = MAJOR(devid);
 	minor = MINOR(devid);
-	pr_info("%s,alloc dev id 0x%x, major =%d, minor = %d!\n", __func__, devid, major, minor);
+	pr_debug("%s,alloc dev id 0x%x, major =%d, minor = %d!\n", __func__, devid, major, minor);
 
 	for (index = 0; index < AUD_TURNING_PRO_CNTS; index++) {
 		aud_turning[index].devid = MKDEV(major, minor+index);
-		pr_info("%s,alloc dev id %d for NO.%d!\n", __func__, aud_turning[index].devid, index);
+		pr_debug("%s,alloc dev id %d for NO.%d!\n", __func__, aud_turning[index].devid, index);
 		cdev_init(&aud_turning[index].turing_cdev, &audio_turning_fops[index]);
 		aud_turning[index].turing_cdev.owner = THIS_MODULE;
 
@@ -3291,7 +3291,7 @@ static int vbc_turning_ndp_init(void)
 		}
 
 		SET_NDP_NAME(ndp_name, index);
-		pr_info("%s,ndp_name = %s !\n", __func__, ndp_name);
+		pr_debug("%s,ndp_name = %s !\n", __func__, ndp_name);
 		aud_turning[index].turing_class = class_create(THIS_MODULE, ndp_name);
 		if (IS_ERR(aud_turning[index].turing_class)) {
 			pr_err("%s, class_create failed!\n", __func__);
@@ -3314,7 +3314,7 @@ static int vbc_turning_ndp_init(void)
 		aud_turning[index].ready = 1;
 	}
 
-	pr_info("%s: success.\n", __func__);
+	pr_debug("%s: success.\n", __func__);
 
 	return 0;
 
@@ -3339,14 +3339,14 @@ static int audio_load_firmware_data(struct firmware *fw, char *firmware_path)
 
 	if (!firmware_path)
 		return -EINVAL;
-	pr_info("%s entry, path %s\n", __func__, firmware_path);
+	pr_debug("%s entry, path %s\n", __func__, firmware_path);
 	file = filp_open(firmware_path, O_RDONLY, 0);
 	if (IS_ERR(file)) {
 		pr_err("%s open file %s error, file =%p\n",
 		       firmware_path, __func__, file);
 		return PTR_ERR(file);
 	}
-	pr_info("audio %s open image file %s  successfully\n",
+	pr_debug("audio %s open image file %s  successfully\n",
 		__func__, firmware_path);
 
 	/* read file to buffer */
@@ -3363,7 +3363,7 @@ static int audio_load_firmware_data(struct firmware *fw, char *firmware_path)
 		return -ENOMEM;
 	}
 	memset(audio_image_buffer, 0, image_size);
-	pr_info("audio_image_buffer=%px\n", audio_image_buffer);
+	pr_debug("audio_image_buffer=%px\n", audio_image_buffer);
 	size = image_size;
 	buf = audio_image_buffer;
 	do {
@@ -3384,7 +3384,7 @@ static int audio_load_firmware_data(struct firmware *fw, char *firmware_path)
 	filp_close(file, NULL);
 	fw->data = audio_image_buffer;
 	fw->size = image_size;
-	pr_info("After read, audio_image_buffer=%px, size=%zd, pos:%zd, read_len:%d, finish.\n",
+	pr_debug("After read, audio_image_buffer=%px, size=%zd, pos:%zd, read_len:%d, finish.\n",
 		fw->data, fw->size, (size_t)pos, read_len);
 
 	return 0;
@@ -3395,7 +3395,7 @@ static void audio_release_firmware_data(struct firmware *fw)
 	if (fw->data) {
 		vfree(fw->data);
 		memset(fw, 0, sizeof(*fw));
-		pr_info("%s\n", __func__);
+		pr_debug("%s\n", __func__);
 	}
 }
 
@@ -3479,7 +3479,7 @@ profile_out:
 	//audio_release_firmware_data(&fw);
 	release_firmware(fw);
 	mutex_unlock(&vbc_codec->load_mutex);
-	sp_asoc_pr_info("%s, return %i\n", __func__, ret);
+	sp_asoc_pr_dbg("%s, return %i\n", __func__, ret);
 
 	return ret;
 }
@@ -4019,7 +4019,7 @@ static int vbc_put_agdsp_aud_access(struct snd_kcontrol *kcontrol,
 
 	enable = ucontrol->value.enumerated.item[0];
 
-	pr_info("%s agcp_access_aud_cnt = %d, agcp_access_a2dp_cnt = %d, en = %s\n",
+	pr_debug("%s agcp_access_aud_cnt = %d, agcp_access_a2dp_cnt = %d, en = %s\n",
 		__func__, vbc_codec->agcp_access_aud_cnt, vbc_codec->agcp_access_a2dp_cnt,
 		enable ? "enable" : "disable");
 	mutex_lock(&vbc_codec->agcp_access_mutex);
@@ -4027,7 +4027,7 @@ static int vbc_put_agdsp_aud_access(struct snd_kcontrol *kcontrol,
 		if (vbc_codec->agcp_access_aud_cnt == 0 &&
 		    vbc_codec->agcp_access_a2dp_cnt == 0) {
 			vbc_codec->agcp_access_aud_cnt++;
-			pr_info("audio hal agdsp_access_enable\n");
+			pr_debug("audio hal agdsp_access_enable\n");
 			ret = agdsp_access_enable();
 			if (ret)
 				pr_err("agdsp_access_enable error:%d\n", ret);
@@ -4038,7 +4038,7 @@ static int vbc_put_agdsp_aud_access(struct snd_kcontrol *kcontrol,
 		if (vbc_codec->agcp_access_aud_cnt != 0) {
 			vbc_codec->agcp_access_aud_cnt = 0;
 			if (vbc_codec->agcp_access_a2dp_cnt == 0) {
-				pr_info("audio hal agdsp_access_disable\n");
+				pr_debug("audio hal agdsp_access_disable\n");
 				agdsp_access_disable();
 				vbc_codec->agcp_access_enable = 0;
 			}
@@ -4059,7 +4059,7 @@ static int vbc_put_agdsp_a2dp_access(struct snd_kcontrol *kcontrol,
 
 	enable = ucontrol->value.enumerated.item[0];
 
-	pr_info("%s agcp_access_aud_cnt = %d, agcp_access_a2dp_cnt = %d\n",
+	pr_debug("%s agcp_access_aud_cnt = %d, agcp_access_a2dp_cnt = %d\n",
 		__func__, vbc_codec->agcp_access_aud_cnt,
 		vbc_codec->agcp_access_a2dp_cnt);
 	mutex_lock(&vbc_codec->agcp_access_mutex);
@@ -4077,7 +4077,7 @@ static int vbc_put_agdsp_a2dp_access(struct snd_kcontrol *kcontrol,
 		if (vbc_codec->agcp_access_a2dp_cnt != 0) {
 			vbc_codec->agcp_access_a2dp_cnt = 0;
 			if (vbc_codec->agcp_access_aud_cnt == 0) {
-				pr_info("audio hal agdsp_access_disable\n");
+				pr_debug("audio hal agdsp_access_disable\n");
 				agdsp_access_disable();
 				vbc_codec->agcp_access_enable = 0;
 			}
@@ -4125,7 +4125,7 @@ int sbc_paras_put(struct snd_kcontrol *kcontrol,
 		return -EINVAL;
 	}
 	memcpy(&vbc_codec->sbcenc_para, ucontrol->value.bytes.data, size);
-	pr_info("%s sbc para %u, %u, %u, %u, %u, %u, %u\n",
+	pr_debug("%s sbc para %u, %u, %u, %u, %u, %u, %u\n",
 		__func__, vbc_codec->sbcenc_para.SBCENC_Mode,
 		vbc_codec->sbcenc_para.SBCENC_Blocks,
 		vbc_codec->sbcenc_para.SBCENC_SubBands,
@@ -4289,7 +4289,7 @@ static int vbc_iis_inf_sys_sel_put(struct snd_kcontrol *kcontrol,
 	}
 
 	value = ucontrol->value.enumerated.item[0];
-	pr_info("%s, value=%d (%s)\n",
+	pr_debug("%s, value=%d (%s)\n",
 		__func__, value, texts->texts[value]);
 	vbc_codec->vbc_iis_inf_sys_sel = value;
 	sprintf(buf, "%s", vbc_iis_inf_sys_sel_txt[value]);
@@ -4408,7 +4408,7 @@ static int vad_din_ad_sel_put(struct snd_kcontrol *kcontrol,
 	value = ucontrol->value.enumerated.item[0];
 	vbc_codec->vad_din_ad_sel = value;
 	sprintf(buf, "%s", vad_din_ad_sel_txt[value]);
-	pr_info("%s, (value %d, %s), %s\n", __func__, value,
+	pr_debug("%s, (value %d, %s), %s\n", __func__, value,
 		texts->texts[value], buf);
 	state = pinctrl_lookup_state(vbc_codec->pctrl, buf);
 	if (IS_ERR(state)) {
@@ -4444,7 +4444,7 @@ static int dsp_hp_crosstalk_en_put(struct snd_kcontrol *kcontrol,
 	struct vbc_codec_priv *vbc_codec = snd_soc_component_get_drvdata(codec);
 
 	enable = ucontrol->value.enumerated.item[0];
-	pr_info("%s enable = %d\n", __func__, enable);
+	pr_debug("%s enable = %d\n", __func__, enable);
 
 	vbc_codec->hp_crosstalk_en = enable;
 	ret = dsp_hp_crosstalk_en_set(enable);
@@ -4492,7 +4492,7 @@ static int dsp_audio_zoom_st_get(struct snd_kcontrol *kcontrol,
 	struct vbc_codec_priv *vbc_codec = snd_soc_component_get_drvdata(codec);
 
 	ucontrol->value.integer.value[0] = vbc_codec->audio_zoom_st;
-	pr_info("%s value = %ld\n", __func__, ucontrol->value.integer.value[0]);
+	pr_debug("%s value = %ld\n", __func__, ucontrol->value.integer.value[0]);
 
 	return 0;
 }
@@ -4506,7 +4506,7 @@ static int dsp_audio_zoom_st_put(struct snd_kcontrol *kcontrol,
 	struct vbc_codec_priv *vbc_codec = snd_soc_component_get_drvdata(codec);
 
 	value = ucontrol->value.enumerated.item[0];
-	pr_info("%s value = %d\n", __func__, value);
+	pr_debug("%s value = %d\n", __func__, value);
 
 	vbc_codec->audio_zoom_st = value;
 	ret = dsp_audio_zoom_st_set(value);
@@ -4522,7 +4522,7 @@ static int dsp_audio_zoom_ratio_get(struct snd_kcontrol *kcontrol,
 	struct vbc_codec_priv *vbc_codec = snd_soc_component_get_drvdata(codec);
 
 	ucontrol->value.integer.value[0] = vbc_codec->audio_zoom_ratio;
-	pr_info("%s value = %ld\n", __func__, ucontrol->value.integer.value[0]);
+	pr_debug("%s value = %ld\n", __func__, ucontrol->value.integer.value[0]);
 
 	return 0;
 }
@@ -4535,7 +4535,7 @@ static int dsp_audio_zoom_ratio_put(struct snd_kcontrol *kcontrol,
 	struct vbc_codec_priv *vbc_codec = snd_soc_component_get_drvdata(codec);
 
 	value = ucontrol->value.integer.value[0];
-	pr_info("%s value = %d\n", __func__, value);
+	pr_debug("%s value = %d\n", __func__, value);
 
 	vbc_codec->audio_zoom_ratio = value;
 	ret = dsp_audio_zoom_ratio_set(value);
@@ -4587,7 +4587,7 @@ static int dsp_audio_zoom_focus_put(struct snd_kcontrol *kcontrol,
 	width = vbc_codec->audio_zoom_focus.width;
 	height = vbc_codec->audio_zoom_focus.height;
 
-	pr_info("%s, audio_zoom_focus, type=%d, x=%d, y=%d, width=%d, height=%d\n",
+	pr_debug("%s, audio_zoom_focus, type=%d, x=%d, y=%d, width=%d, height=%d\n",
 			__func__, type, x, y, width, height);
 
 	ret = dsp_audio_zoom_focus_set(type, x, y, width, height);
@@ -5745,7 +5745,7 @@ static void normal_p_suspend_resume_add_ref(void)
 
 	pm_vbc = aud_pm_vbc_get();
 	pm_vbc->ref_suspend_resume++;
-	pr_info("%s ref=%d\n", __func__, pm_vbc->ref_suspend_resume);
+	pr_debug("%s ref=%d\n", __func__, pm_vbc->ref_suspend_resume);
 }
 
 static void normal_p_suspend_resume_dec_ref(void)
@@ -5754,7 +5754,7 @@ static void normal_p_suspend_resume_dec_ref(void)
 
 	pm_vbc = aud_pm_vbc_get();
 	pm_vbc->ref_suspend_resume--;
-	pr_info("%s ref=%d\n", __func__, pm_vbc->ref_suspend_resume);
+	pr_debug("%s ref=%d\n", __func__, pm_vbc->ref_suspend_resume);
 }
 
 static int normal_p_suspend_resume_get_ref(void)
@@ -5764,7 +5764,7 @@ static int normal_p_suspend_resume_get_ref(void)
 
 	pm_vbc = aud_pm_vbc_get();
 	ref = pm_vbc->ref_suspend_resume;
-	pr_info("%s ref=%d\n", __func__, ref);
+	pr_debug("%s ref=%d\n", __func__, ref);
 
 	return ref;
 }
@@ -5778,7 +5778,7 @@ static void set_normal_p_running_status(int stream, bool status)
 	if (!is_playback)
 		return;
 	pm_vbc->is_startup = status;
-	pr_info("%s is_startup=%s\n", __func__,
+	pr_debug("%s is_startup=%s\n", __func__,
 		pm_vbc->is_startup ? "true" : "false");
 }
 
@@ -5793,7 +5793,7 @@ static bool get_normal_p_running_status(int stream)
 		return false;
 
 	status = pm_vbc->is_startup;
-	pr_info("%s is_startup=%s\n", __func__,
+	pr_debug("%s is_startup=%s\n", __func__,
 		status ? "true" : "false");
 
 	return status;
@@ -5805,7 +5805,7 @@ static int vbc_normal_resume(void)
 
 	pm_vbc = aud_pm_vbc_get();
 	restore_access();
-	pr_info("%s resumed\n", __func__);
+	pr_debug("%s resumed\n", __func__);
 
 	return 0;
 }
@@ -5832,22 +5832,22 @@ static int vbc_normal_suspend(void)
 	 * will meet requirements. Do not put them in PM_SUSPEND_PREPARE
 	 * it is too early.
 	 */
-	pr_info("%s enter suspend\n", __func__);
+	pr_debug("%s enter suspend\n", __func__);
 	normal_vbc_protect_mutex_lock(stream);
 	is_startup = get_normal_p_running_status(SNDRV_PCM_STREAM_PLAYBACK);
 	if (is_startup == false) {
-		pr_info("%s startup not called just return\n", __func__);
+		pr_debug("%s startup not called just return\n", __func__);
 		normal_vbc_protect_mutex_unlock(stream);
 		return 0;
 	}
-	pr_info("%s send shutdown\n", __func__);
+	pr_debug("%s send shutdown\n", __func__);
 	normal_vbc_protect_spin_lock(stream);
 	set_normal_p_running_status(SNDRV_PCM_STREAM_PLAYBACK, false);
 	normal_vbc_protect_spin_unlock(stream);
 	pm_shutdown();
 	normal_vbc_protect_mutex_unlock(stream);
 	disable_access_force();
-	pr_info("%s suspeded\n", __func__);
+	pr_debug("%s suspeded\n", __func__);
 
 	return 0;
 }
@@ -5928,7 +5928,7 @@ static int get_startup_scene_dac_id(int scene_id)
 		break;
 	}
 
-	pr_info("%s scene is %s(id %d) dac_id = %d\n",
+	pr_debug("%s scene is %s(id %d) dac_id = %d\n",
 		__func__, scene_id_to_str(scene_id), scene_id, dac_id);
 
 	return dac_id;
@@ -6013,7 +6013,7 @@ static int get_startup_scene_adc_id(int scene_id)
 		adc_id = VBC_AD0;
 		break;
 	}
-	pr_info("%s scene is %s(id %d) adc_id = %d\n",
+	pr_debug("%s scene is %s(id %d) adc_id = %d\n",
 		__func__, scene_id_to_str(scene_id), scene_id, adc_id);
 
 	return adc_id;
@@ -6565,7 +6565,7 @@ static int ap_hw_params(struct vbc_codec_priv *vbc_codec,
 	use_ad_src = ap_ad_src_check(scene_id, stream);
 	if (use_ad_src) {
 		ap_vbc_ad_src_set(1, rate);
-		pr_info("%s vbc ap src set rate %u\n", __func__, rate);
+		pr_debug("%s vbc ap src set rate %u\n", __func__, rate);
 	}
 
 	/* vbc_dsp_hw_params need not call in normal scene*/
@@ -7030,7 +7030,7 @@ static int scene_normal_startup(struct snd_pcm_substream *substream,
 	int ret = 0;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -7071,7 +7071,7 @@ static void scene_normal_shutdown(struct snd_pcm_substream *substream,
 	int is_started;
 	int is_playback = stream == SNDRV_PCM_STREAM_PLAYBACK ? 1 : 0;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -7114,7 +7114,7 @@ static int scene_normal_hw_params(struct snd_pcm_substream *substream,
 	int is_playback = stream == SNDRV_PCM_STREAM_PLAYBACK ? 1 : 0;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -7137,7 +7137,7 @@ static int scene_normal_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 	if (chan_cnt > 2)
 		pr_warn("%s channel count invalid\n", __func__);
@@ -7167,7 +7167,7 @@ static int scene_normal_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_NORMAL_AP01;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -7189,7 +7189,7 @@ static void fill_hifi_shutdown_data(int scene_id, int stream,
 	hifi_shutdown_info->id = scene_id;
 	hifi_shutdown_info->stream = stream;
 	hifi_shutdown_info->enable = 0;
-	pr_info("%s enable: %d, scene_id: %d, stream: %d", __func__,
+	pr_debug("%s enable: %d, scene_id: %d, stream: %d", __func__,
 			hifi_shutdown_info->enable, hifi_shutdown_info->id,
 			hifi_shutdown_info->stream);
 }
@@ -7202,7 +7202,7 @@ void fill_hifi_dsp_hw_data(int scene_id, int stream, int chan_cnt, int rate, int
 	hifi_data->hw_params_info.channels = chan_cnt;
 	hifi_data->hw_params_info.format = fmt;
 	hifi_data->hw_params_info.rate = rate_to_src_mode(rate);
-	pr_info("%s id %d, stream %d, channel %d, fmt %d, rate_src_mode %d",
+	pr_debug("%s id %d, stream %d, channel %d, fmt %d, rate_src_mode %d",
 			__func__, hifi_data->stream_info.id, hifi_data->stream_info.stream,
 			hifi_data->hw_params_info.channels,
 			hifi_data->hw_params_info.format,
@@ -7215,7 +7215,7 @@ static void fill_hifi_startup_data(int scene_id, int stream,
 	hifi_startup_info->id = scene_id;
 	hifi_startup_info->stream = stream;
 	hifi_startup_info->enable = 1;
-	pr_info("%s startup enable: %d, scene_id %d, stream %d",
+	pr_debug("%s startup enable: %d, scene_id %d, stream %d",
 			__func__, hifi_startup_info->enable,
 			hifi_startup_info->id, hifi_startup_info->stream);
 }
@@ -7304,7 +7304,7 @@ static int scene_normal_trigger(struct snd_pcm_substream *substream, int cmd,
 	int is_started;
 	int is_playback = stream == SNDRV_PCM_STREAM_PLAYBACK ? 1 : 0;
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -7372,7 +7372,7 @@ static int scene_normal_ap23_startup(struct snd_pcm_substream *substream,
 	int ret = 0;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -7404,7 +7404,7 @@ static void scene_normal_ap23_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -7434,7 +7434,7 @@ static int scene_normal_ap23_hw_params(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_NORMAL_AP23;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -7457,7 +7457,7 @@ static int scene_normal_ap23_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 	if (chan_cnt > 2)
 		pr_warn("%s channel count invalid\n", __func__);
@@ -7482,7 +7482,7 @@ static int scene_normal_ap23_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_NORMAL_AP23;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -7508,7 +7508,7 @@ static int scene_normal_ap23_trigger(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int vbc_chan = VBC_ALL_CHAN;
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -7564,7 +7564,7 @@ static int scene_capture_dsp_startup(struct snd_pcm_substream *substream,
 	int ret = 0;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -7596,7 +7596,7 @@ static void scene_capture_dsp_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -7625,7 +7625,7 @@ static int scene_capture_dsp_hw_params(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -7648,7 +7648,7 @@ static int scene_capture_dsp_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 
 	if (chan_cnt > 2)
@@ -7672,7 +7672,7 @@ static int scene_capture_dsp_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_CAPTURE_DSP;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -7697,7 +7697,7 @@ static int scene_capture_dsp_trigger(struct snd_pcm_substream *substream,
 	int ret;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -7744,7 +7744,7 @@ static int scene_recognise_capture_startup(struct snd_pcm_substream *substream,
 	int ret = 0;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -7933,7 +7933,7 @@ static int scene_fast_startup(struct snd_pcm_substream *substream,
 	int ret = 0;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -7965,7 +7965,7 @@ static void scene_fast_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -7994,7 +7994,7 @@ static int scene_fast_hw_params(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -8017,7 +8017,7 @@ static int scene_fast_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 
 	if (chan_cnt > 2)
@@ -8041,7 +8041,7 @@ static int scene_fast_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_FAST_P;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -8066,7 +8066,7 @@ static int scene_fast_trigger(struct snd_pcm_substream *substream, int cmd,
 	int ret;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -8113,7 +8113,7 @@ static int scene_offload_startup(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int be_dai_id = dai->id;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -8145,7 +8145,7 @@ static void scene_offload_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -8174,7 +8174,7 @@ static int scene_offload_hw_params(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int chan_cnt = 2;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -8184,7 +8184,7 @@ static int scene_offload_hw_params(struct snd_pcm_substream *substream,
 	if (!vbc_codec)
 		return 0;
 
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 	if (chan_cnt > 2)
 		pr_warn("%s channel count invalid\n", __func__);
@@ -8206,7 +8206,7 @@ static int scene_offload_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_OFFLOAD;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -8231,7 +8231,7 @@ static int scene_offload_trigger(struct snd_pcm_substream *substream, int cmd,
 	int ret;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -8277,7 +8277,7 @@ static int scene_offload_a2dp_startup(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	int ret = 0;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -8309,7 +8309,7 @@ static void scene_offload_a2dp_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -8338,7 +8338,7 @@ static int scene_offload_a2dp_hw_params(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -8361,7 +8361,7 @@ static int scene_offload_a2dp_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 	if (chan_cnt > 2)
 		pr_warn("%s channel count invalid\n", __func__);
@@ -8383,7 +8383,7 @@ static int scene_offload_a2dp_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_OFFLOAD_A2DP;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -8408,7 +8408,7 @@ static int scene_offload_a2dp_trigger(struct snd_pcm_substream *substream,
 	int ret;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -8454,7 +8454,7 @@ static int scene_pcm_a2dp_startup(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	int ret = 0;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -8486,7 +8486,7 @@ static void scene_pcm_a2dp_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -8515,7 +8515,7 @@ static int scene_pcm_a2dp_hw_params(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -8538,7 +8538,7 @@ static int scene_pcm_a2dp_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 	if (chan_cnt > 2)
 		pr_warn("%s channel count invalid\n", __func__);
@@ -8565,7 +8565,7 @@ static int scene_pcm_a2dp_hw_free(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 
 	if (!vbc_codec)
@@ -8586,7 +8586,7 @@ static int scene_pcm_a2dp_trigger(struct snd_pcm_substream *substream, int cmd,
 	int ret;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -8632,7 +8632,7 @@ static int scene_voice_startup(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int ret = 0;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -8664,7 +8664,7 @@ static void scene_voice_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -8693,7 +8693,7 @@ static int scene_voice_hw_params(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -8716,7 +8716,7 @@ static int scene_voice_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 	if (chan_cnt > 2)
 		pr_warn("%s channel count invalid\n", __func__);
@@ -8740,7 +8740,7 @@ static int scene_voice_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_VOICE;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -8765,7 +8765,7 @@ static int scene_voice_trigger(struct snd_pcm_substream *substream, int cmd,
 	int ret;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -8810,7 +8810,7 @@ static int scene_voice_capture_startup(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int ret = 0;
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -8842,7 +8842,7 @@ static void scene_voice_capture_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -8871,7 +8871,7 @@ static int scene_voice_capture_hw_params(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -8896,7 +8896,7 @@ static int scene_voice_capture_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 	if (chan_cnt > 2)
 		pr_warn("%s channel count invalid\n", __func__);
@@ -8918,7 +8918,7 @@ static int scene_voice_capture_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_VOICE_CAPTURE;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -8943,7 +8943,7 @@ static int scene_voice_capture_trigger(struct snd_pcm_substream *substream,
 	int ret;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -8990,7 +8990,7 @@ static int scene_voice_pcm_startup(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int ret = 0;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -9018,7 +9018,7 @@ static void scene_voice_pcm_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -9048,7 +9048,7 @@ static int scene_voice_pcm_hw_params(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -9073,7 +9073,7 @@ static int scene_voice_pcm_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 	if (chan_cnt > 2)
 		pr_warn("%s channel count invalid\n", __func__);
@@ -9092,7 +9092,7 @@ static int scene_voice_pcm_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_VOICE_PCM_P;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -9117,7 +9117,7 @@ static int scene_voice_pcm_trigger(struct snd_pcm_substream *substream,
 	int ret;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -9166,7 +9166,7 @@ static int scene_voip_startup(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int ret = 0;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -9198,7 +9198,7 @@ static void scene_voip_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -9227,7 +9227,7 @@ static int scene_voip_hw_params(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -9250,7 +9250,7 @@ static int scene_voip_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 	if (chan_cnt > 2)
 		pr_warn("%s channel count invalid\n", __func__);
@@ -9272,7 +9272,7 @@ static int scene_voip_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_VOIP;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -9297,7 +9297,7 @@ static int scene_voip_trigger(struct snd_pcm_substream *substream, int cmd,
 	int ret;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -9343,7 +9343,7 @@ static int scene_loop_startup(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int ret = 0;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -9375,7 +9375,7 @@ static void scene_loop_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -9404,7 +9404,7 @@ static int scene_loop_hw_params(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -9427,7 +9427,7 @@ static int scene_loop_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 	if (chan_cnt > 2)
 		pr_warn("%s channel count invalid\n", __func__);
@@ -9449,7 +9449,7 @@ static int scene_loop_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_LOOP;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -9474,7 +9474,7 @@ static int scene_loop_trigger(struct snd_pcm_substream *substream, int cmd,
 	int ret;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd = %d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd = %d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -9520,7 +9520,7 @@ static int scene_fm_startup(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int ret = 0;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -9555,7 +9555,7 @@ static void scene_fm_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -9586,7 +9586,7 @@ static int scene_fm_hw_params(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -9609,7 +9609,7 @@ static int scene_fm_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 	if (chan_cnt > 2)
 		pr_warn("%s channel count invalid\n", __func__);
@@ -9631,7 +9631,7 @@ static int scene_fm_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_FM;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -9656,7 +9656,7 @@ static int scene_fm_trigger(struct snd_pcm_substream *substream, int cmd,
 	int ret;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -9702,7 +9702,7 @@ static int scene_bt_capture_startup(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int ret = 0;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -9734,7 +9734,7 @@ static void scene_bt_capture_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -9764,7 +9764,7 @@ static int scene_bt_capture_hw_params(struct snd_pcm_substream *substream,
 	int chan_cnt;
 	int vbc_chan = VBC_ALL_CHAN;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -9787,7 +9787,7 @@ static int scene_bt_capture_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 	if (chan_cnt > 2)
 		pr_warn("%s channel count invalid\n", __func__);
@@ -9813,7 +9813,7 @@ static int scene_bt_capture_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_BT_CAPTURE_AP;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -9840,7 +9840,7 @@ static int scene_bt_capture_trigger(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int vbc_chan = VBC_ALL_CHAN;
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -9895,7 +9895,7 @@ static int scene_fm_capture_startup(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_FM_CAPTURE_AP;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -9922,7 +9922,7 @@ static void scene_fm_capture_shutdown(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_FM_CAPTURE_AP;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -9950,7 +9950,7 @@ static int scene_fm_capture_hw_params(struct snd_pcm_substream *substream,
 	int chan_cnt;
 	int vbc_chan = VBC_ALL_CHAN;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -9973,7 +9973,7 @@ static int scene_fm_capture_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 	if (chan_cnt > 2)
 		pr_warn("%s channel count invalid\n", __func__);
@@ -9997,7 +9997,7 @@ static int scene_fm_capture_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_FM_CAPTURE_AP;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -10023,7 +10023,7 @@ static int scene_fm_capture_trigger(struct snd_pcm_substream *substream,
 	int vbc_chan = VBC_ALL_CHAN;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -10078,7 +10078,7 @@ static int scene_capture_fm_dsp_startup(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int ret = 0;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -10110,7 +10110,7 @@ static void scene_capture_fm_dsp_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -10139,7 +10139,7 @@ static int scene_capture_fm_dsp_hw_params(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -10162,7 +10162,7 @@ static int scene_capture_fm_dsp_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 
 	if (chan_cnt > 2)
@@ -10187,7 +10187,7 @@ static int scene_capture_fm_dsp_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_FM_CAPTURE_DSP;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -10213,7 +10213,7 @@ static int scene_capture_fm_dsp_trigger(struct snd_pcm_substream *substream,
 	int ret;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -10260,7 +10260,7 @@ static int scene_capture_btsco_dsp_startup(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int ret = 0;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -10292,7 +10292,7 @@ static void scene_capture_btsco_dsp_shutdown(
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -10323,7 +10323,7 @@ static int scene_capture_btsco_dsp_hw_params(
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -10346,7 +10346,7 @@ static int scene_capture_btsco_dsp_hw_params(
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 
 	if (chan_cnt > 2)
@@ -10371,7 +10371,7 @@ static int scene_capture_btsco_dsp_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_BT_SCO_CAPTURE_DSP;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -10396,7 +10396,7 @@ static int scene_capture_btsco_dsp_trigger(struct snd_pcm_substream *substream,
 	int ret;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -10443,7 +10443,7 @@ static int scene_fm_dsp_startup(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int ret = 0;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -10479,7 +10479,7 @@ static void scene_fm_dsp_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -10510,7 +10510,7 @@ static int scene_fm_dsp_hw_params(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -10533,7 +10533,7 @@ static int scene_fm_dsp_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 	if (chan_cnt > 2)
 		pr_warn("%s channel count invalid\n", __func__);
@@ -10555,7 +10555,7 @@ static int scene_fm_dsp_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_FM_DSP;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -10580,7 +10580,7 @@ static int scene_fm_dsp_trigger(struct snd_pcm_substream *substream, int cmd,
 	int ret;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -10688,7 +10688,7 @@ static int scene_dump_startup(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_NORMAL_AP01;
 	int ret;
 
-	pr_info("%s dai:%s(%d) %s, scene: %s\n", __func__,
+	pr_debug("%s dai:%s(%d) %s, scene: %s\n", __func__,
 		dai_id_to_str(dai->id), dai->id, stream_to_str(stream),
 		scene_id_to_str(scene_id));
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -10723,7 +10723,7 @@ static void scene_dump_shutdown(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int scene_id = VBC_DAI_ID_NORMAL_AP01;
 
-	pr_info("%s dai:%s(%d) %s, scene: %s\n", __func__,
+	pr_debug("%s dai:%s(%d) %s, scene: %s\n", __func__,
 		dai_id_to_str(dai->id), dai->id, stream_to_str(stream),
 		scene_id_to_str(scene_id));
 	if (!vbc_codec)
@@ -10748,7 +10748,7 @@ static int scene_dump_hw_params(struct snd_pcm_substream *substream,
 	int chan_cnt;
 	int vbc_chan = VBC_ALL_CHAN;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -10771,7 +10771,7 @@ static int scene_dump_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 	if (chan_cnt > 2)
 		pr_warn("%s channel count invalid\n", __func__);
@@ -10795,7 +10795,7 @@ static int scene_dump_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_NORMAL_AP01;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -10821,7 +10821,7 @@ static int scene_dump_trigger(struct snd_pcm_substream *substream,
 	int vbc_chan = VBC_ALL_CHAN;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -11059,7 +11059,7 @@ static int scene_hifi_startup(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	int ret = 0;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -11088,7 +11088,7 @@ static void scene_hifi_shutdown(struct snd_pcm_substream *substream,
 	int scene_id = AUDCP_DAI_ID_HIFI;
 	int be_dai_id = dai->id;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -11114,7 +11114,7 @@ static int scene_hifi_hw_params(struct snd_pcm_substream *substream,
 	int scene_id = AUDCP_DAI_ID_HIFI;
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -11135,7 +11135,7 @@ static int scene_hifi_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 
 	if (chan_cnt > 2)
@@ -11158,7 +11158,7 @@ static int scene_hifi_hw_free(struct snd_pcm_substream *substream,
 	int stream = substream->stream;
 	int scene_id = AUDCP_DAI_ID_HIFI;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -11180,7 +11180,7 @@ static int scene_hifi_trigger(struct snd_pcm_substream *substream, int cmd,
 	int scene_id = AUDCP_DAI_ID_HIFI;
 	int ret;
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -11221,7 +11221,7 @@ static int scene_hifi_fast_startup(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	int ret = 0;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -11250,7 +11250,7 @@ static void scene_hifi_fast_shutdown(struct snd_pcm_substream *substream,
 	int scene_id = AUDCP_DAI_ID_FAST;
 	int be_dai_id = dai->id;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -11276,7 +11276,7 @@ static int scene_hifi_fast_hw_params(struct snd_pcm_substream *substream,
 	int scene_id = AUDCP_DAI_ID_FAST;
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -11297,7 +11297,7 @@ static int scene_hifi_fast_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 
 	if (chan_cnt > 2)
@@ -11320,7 +11320,7 @@ static int scene_hifi_fast_hw_free(struct snd_pcm_substream *substream,
 	int stream = substream->stream;
 	int scene_id = AUDCP_DAI_ID_FAST;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -11342,7 +11342,7 @@ static int scene_hifi_fast_trigger(struct snd_pcm_substream *substream, int cmd,
 	int scene_id = AUDCP_DAI_ID_FAST;
 	int ret;
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -11385,7 +11385,7 @@ static int scene_smtpa_fast_startup(struct snd_pcm_substream *substream,
 	int ret = 0;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -11417,7 +11417,7 @@ static void scene_smtpa_fast_shutdown(struct snd_pcm_substream *substream,
 	int be_dai_id = dai->id;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__,
 		dai_id_to_str(be_dai_id),
 		be_dai_id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(be_dai_id)) {
@@ -11446,7 +11446,7 @@ static int scene_smtpa_fast_hw_params(struct snd_pcm_substream *substream,
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 	int chan_cnt;
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -11469,7 +11469,7 @@ static int scene_smtpa_fast_hw_params(struct snd_pcm_substream *substream,
 	}
 	chan_cnt = params_channels(params);
 	rate = params_rate(params);
-	pr_info("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
+	pr_debug("%s data_fmt=%s, chan=%u, rate =%u\n", __func__,
 		vbc_data_fmt_to_str(data_fmt), chan_cnt, rate);
 
 	if (chan_cnt > 2)
@@ -11493,7 +11493,7 @@ static int scene_smtpa_fast_hw_free(struct snd_pcm_substream *substream,
 	int scene_id = VBC_DAI_ID_FAST_P_SMART_AMP;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
+	pr_debug("%s dai:%s(%d) scene:%s %s\n", __func__, dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream));
 	if (scene_id != check_be_dai_id(dai->id)) {
 		pr_err("%s check_be_dai_id failed\n", __func__);
@@ -11518,7 +11518,7 @@ static int scene_smtpa_fast_trigger(struct snd_pcm_substream *substream, int cmd
 	int ret;
 	struct vbc_codec_priv *vbc_codec = dev_get_drvdata(dai->dev);
 
-	pr_info("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
+	pr_debug("%s dai:%s(%d) scene:%s %s, cmd=%d\n", __func__,
 		dai_id_to_str(dai->id),
 		dai->id, scene_id_to_str(scene_id), stream_to_str(stream), cmd);
 	if (scene_id != check_be_dai_id(dai->id)) {
@@ -12745,7 +12745,7 @@ static int vbc_drv_probe(struct platform_device *pdev)
 	int ret;
 	struct vbc_codec_priv *vbc_codec = NULL;
 
-	pr_info("%s: to setup vbc dt\n", __func__);
+	pr_debug("%s: to setup vbc dt\n", __func__);
 	/* 1. probe CODEC */
 	ret = sprd_vbc_codec_probe(pdev);
 	if (ret < 0)

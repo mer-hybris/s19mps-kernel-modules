@@ -79,7 +79,7 @@ static int sprd_panel_unprepare(struct drm_panel *p)
 	if (tp_proximity_state) {
 		state = tp_proximity_state();
 	}
-	DRM_INFO("qinfan unprepare lcd  state (%d)\n", state);
+	DRM_DEBUG("qinfan unprepare lcd  state (%d)\n", state);
 
 	//qinfan add fot  E98_ZXT incell tp proximity must no lcd poweroff 
 	if (state == 1 ) {
@@ -88,7 +88,7 @@ static int sprd_panel_unprepare(struct drm_panel *p)
 #endif
 	{
 
-	DRM_INFO("%s()\n", __func__);
+	DRM_DEBUG("%s()\n", __func__);
 
 	if (panel->info.reset_gpio) {
 		items = panel->info.rst_off_seq.items;
@@ -99,7 +99,7 @@ static int sprd_panel_unprepare(struct drm_panel *p)
 			mdelay(timing[i].delay);
 		}
 	}
-	DRM_INFO("revo pwr_always_on (%d)\n", panel->info.pwr_always_on);
+	DRM_DEBUG("revo pwr_always_on (%d)\n", panel->info.pwr_always_on);
 	if (!panel->info.pwr_always_on) {
 		if (panel->info.avee_gpio) {
 			gpiod_direction_output(panel->info.avee_gpio, 0);
@@ -137,7 +137,7 @@ static int sprd_panel_prepare(struct drm_panel *p)
                 state = tp_proximity_state();
         }
 #endif
-	DRM_INFO("%s()\n", __func__);
+	DRM_DEBUG("%s()\n", __func__);
 
 	ret = regulator_enable(panel->supply);
 	if (ret < 0)
@@ -186,7 +186,7 @@ void  sprd_panel_enter_doze(struct drm_panel *p)
 {
 	struct sprd_panel *panel = to_sprd_panel(p);
 
-	DRM_INFO("%s() enter\n", __func__);
+	DRM_DEBUG("%s() enter\n", __func__);
 
 	mutex_lock(&panel->lock);
 
@@ -206,7 +206,7 @@ void  sprd_panel_exit_doze(struct drm_panel *p)
 {
 	struct sprd_panel *panel = to_sprd_panel(p);
 
-	DRM_INFO("%s() enter\n", __func__);
+	DRM_DEBUG("%s() enter\n", __func__);
 
 	mutex_lock(&panel->lock);
 
@@ -239,7 +239,7 @@ static int sprd_panel_disable(struct drm_panel *p)
 			export_enable_tp_sleep();
 	}
 #endif
-	DRM_INFO("%s()\n", __func__);
+	DRM_DEBUG("%s()\n", __func__);
 
 	mutex_lock(&panel->lock);
 	/*
@@ -262,10 +262,10 @@ static int sprd_panel_disable(struct drm_panel *p)
 	}
 
 #ifdef PRJ_FEATURE_H_BOARD_INCELL_TP_PROXIMITY_CONTROL
-	DRM_INFO("qinfan disable lcd psensor state (%d)\n", state);
+	DRM_DEBUG("qinfan disable lcd psensor state (%d)\n", state);
 	if ((!(strcmp(info->of_node->name, "lcd_ft8006_mipi"))&&(state == 1 )) || 
         (!(strcmp(info->of_node->name, "lcd_gc7202_mipi"))&&(state == 1 ))) {
-		DRM_INFO("qinfan proximity send cmd\n");
+		DRM_DEBUG("qinfan proximity send cmd\n");
 		sprd_panel_send_cmds(panel->slave,
 				panel->info.cmds[CMD_CODE_SLEEP_FACE_IN],
 				panel->info.cmds_len[CMD_CODE_SLEEP_FACE_IN]);
@@ -292,7 +292,7 @@ static int sprd_panel_disable(struct drm_panel *p)
 static int sprd_panel_enable(struct drm_panel *p)
 {
 	struct sprd_panel *panel = to_sprd_panel(p);
-	DRM_INFO("%s()\n", __func__);
+	DRM_DEBUG("%s()\n", __func__);
 
 	mutex_lock(&panel->lock);
 	sprd_panel_send_cmds(panel->slave,
@@ -327,7 +327,7 @@ static int sprd_panel_get_modes(struct drm_panel *p)
 	u32 sr_width = 0, sr_height = 0;
 	int i, mode_count = 0;
 
-	DRM_INFO("%s()\n", __func__);
+	DRM_DEBUG("%s()\n", __func__);
 	mode = drm_mode_duplicate(p->drm, &panel->info.mode);
 	if (!mode) {
 		DRM_ERROR("failed to alloc mode %s\n", panel->info.mode.name);
@@ -419,7 +419,7 @@ static int sprd_panel_esd_check(struct sprd_panel *panel)
 	    !panel->base.connector->encoder->crtc ||
 	    !panel->base.connector->encoder->crtc->state ||
 	    !panel->base.connector->encoder->crtc->state->active) {
-		DRM_INFO("skip esd during panel suspend\n");
+		DRM_DEBUG("skip esd during panel suspend\n");
 		return 0;
 	}
 
@@ -460,7 +460,7 @@ static int sprd_panel_te_check(struct sprd_panel *panel)
 	    !panel->base.connector->encoder->crtc ||
 	    (panel->base.connector->encoder->crtc->state &&
 	    !panel->base.connector->encoder->crtc->state->active)) {
-		DRM_INFO("skip esd during panel suspend\n");
+		DRM_DEBUG("skip esd during panel suspend\n");
 		return 0;
 	}
 
@@ -561,16 +561,16 @@ static void sprd_panel_esd_work_func(struct work_struct *work)
 
 		if (!encoder->crtc || (encoder->crtc->state &&
 		    !encoder->crtc->state->active)) {
-			DRM_INFO("skip esd recovery during panel suspend\n");
+			DRM_DEBUG("skip esd recovery during panel suspend\n");
 			return;
 		}
 
-		DRM_INFO("====== esd recovery start ========\n");
+		DRM_DEBUG("====== esd recovery start ========\n");
 		panel->is_esd_rst = true;
 		funcs->disable(encoder);
 		funcs->enable(encoder);
 		panel->is_esd_rst = false;
-		DRM_INFO("======= esd recovery end =========\n");
+		DRM_DEBUG("======= esd recovery end =========\n");
 	} else
 		schedule_delayed_work(&panel->esd_work,
 			msecs_to_jiffies(info->esd_check_period));
@@ -697,7 +697,7 @@ static int of_parse_buildin_modes(struct panel_info *info,
 		info->buildin_modes[i].vrefresh = drm_mode_vrefresh(&info->buildin_modes[i]);
 	}
 	info->num_buildin_modes = num_timings;
-	DRM_INFO("info->num_buildin_modes = %d\n", num_timings);
+	DRM_DEBUG("info->num_buildin_modes = %d\n", num_timings);
 	goto done;
 
 entryfail:
@@ -759,7 +759,7 @@ static int sprd_oled_set_brightness(struct backlight_device *bdev)
 
 	brightness = bdev->props.brightness;
 
-	DRM_INFO("%s brightness: %d\n", __func__, brightness);
+	DRM_DEBUG("%s brightness: %d\n", __func__, brightness);
 
 	sprd_panel_send_cmds(panel->slave,
 			     panel->info.cmds[CMD_OLED_REG_LOCK],
@@ -863,7 +863,7 @@ static int sprd_oled_backlight_init(struct sprd_panel *panel)
 			panel->info.cmds[CMD_OLED_BRIGHTNESS],
 			panel->info.cmds_len[CMD_OLED_BRIGHTNESS]);
 
-	DRM_INFO("%s() ok\n", __func__);
+	DRM_DEBUG("%s() ok\n", __func__);
 
 	return 0;
 }
@@ -1095,7 +1095,7 @@ static void sprd_parse_vrr_config(struct sprd_panel *panel)
 	u32 val;
 
 	if (of_property_read_bool(lcd_node, "sprd,vrr-enabled")) {
-		DRM_INFO("vrr supported and config %d modes\n", info->num_buildin_modes);
+		DRM_DEBUG("vrr supported and config %d modes\n", info->num_buildin_modes);
 		info->vrr_enabled = true;
 	} else {
 		info->vrr_enabled = false;
@@ -1130,7 +1130,7 @@ static int sprd_panel_parse_dt(struct device_node *np, struct sprd_panel *panel)
 		lcd_name_p = strstr(cmd_line, "lcd_name=");
 		if (lcd_name_p) {
 			sscanf(lcd_name_p, "lcd_name=%s", panel->lcd_name);
-			DRM_INFO("lcd name: %s\n", panel->lcd_name);
+			DRM_DEBUG("lcd name: %s\n", panel->lcd_name);
 		}
 #if defined(PRJ_FEATURE_H_GET_SECBOOT_STATE)
 		str_secboot_state = strstr(cmd_line, "secboot=");
@@ -1318,7 +1318,7 @@ static int sprd_panel_remove(struct mipi_dsi_device *slave)
 	struct sprd_panel *panel = mipi_dsi_get_drvdata(slave);
 	int ret;
 
-	DRM_INFO("%s()\n", __func__);
+	DRM_DEBUG("%s()\n", __func__);
 
 	sprd_panel_disable(&panel->base);
 	sprd_panel_unprepare(&panel->base);

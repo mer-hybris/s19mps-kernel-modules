@@ -580,7 +580,7 @@ int aud_smsg_send(u8 dst, struct aud_smsg *msg)
 	int ret;
 
 	ipc = aud_smsg_ipcs[dst];
-	pr_info("%s: dst=%d, channel=%d\n", __func__, dst, msg->channel);
+	pr_debug("%s: dst=%d, channel=%d\n", __func__, dst, msg->channel);
 	if (!ipc)
 		return -ENODEV;
 
@@ -684,7 +684,7 @@ int aud_smsg_recv(u8 dst, struct aud_smsg *msg, int timeout)
 		/* no wait */
 		if (readl_relaxed((void *)ch->wrptr)
 			== readl_relaxed((void *)ch->rdptr)) {
-			sp_asoc_pr_info("warning %s cache is empty!\n",
+			sp_asoc_pr_dbg("warning %s cache is empty!\n",
 			__func__);
 			rval = -ENODATA;
 			goto recv_failed;

@@ -42,7 +42,7 @@ static void sprd_dpu_prepare_fb(struct sprd_crtc *crtc,
 	int i;
 
 	if (!dpu->ctx.enabled) {
-		DRM_WARN("dpu has already powered off\n");
+		DRM_DEBUG("dpu has already powered off\n");
 		return;
 	}
 
@@ -79,7 +79,7 @@ static unsigned long sprd_free_reserved_area(void *start, void *end, int poison,
 	}
 
 	if (pages && s)
-		pr_info("Freeing %s memory: %ldK\n",
+		pr_debug("Freeing %s memory: %ldK\n",
 			s, pages << (PAGE_SHIFT - 10));
 
 	return pages;
@@ -109,7 +109,7 @@ static void sprd_dpu_cleanup_fb(struct sprd_crtc *crtc,
 
 	if (unlikely(atomic_inc_not_zero(&logo2animation)) &&
 		dpu->ctx.logo_addr) {
-		DRM_INFO("free logo memory addr:0x%lx size:0x%lx\n",
+		DRM_DEBUG("free logo memory addr:0x%lx size:0x%lx\n",
 			dpu->ctx.logo_addr, dpu->ctx.logo_size);
 		sprd_free_reserved_area(phys_to_virt(dpu->ctx.logo_addr),
 			phys_to_virt(dpu->ctx.logo_addr + dpu->ctx.logo_size),
@@ -134,7 +134,7 @@ static void sprd_dpu_mode_set_nofb(struct sprd_crtc *crtc)
 		(struct sprd_panel *)container_of(dpu->dsi->panel, struct sprd_panel, base);
 	int i;
 
-	DRM_INFO("%s() mode: "DRM_MODE_FMT"\n", __func__, DRM_MODE_ARG(mode));
+	DRM_DEBUG("%s() mode: "DRM_MODE_FMT"\n", __func__, DRM_MODE_ARG(mode));
 
 	if (dsi->ctx.work_mode == DSI_MODE_VIDEO)
 		dpu->ctx.if_type = SPRD_DPU_IF_DPI;
@@ -169,7 +169,7 @@ static void sprd_dpu_mode_set_nofb(struct sprd_crtc *crtc)
 static enum drm_mode_status sprd_dpu_mode_valid(struct sprd_crtc *crtc,
 					const struct drm_display_mode *mode)
 {
-	DRM_INFO("%s() mode: "DRM_MODE_FMT"\n", __func__, DRM_MODE_ARG(mode));
+	DRM_DEBUG("%s() mode: "DRM_MODE_FMT"\n", __func__, DRM_MODE_ARG(mode));
 
 	return MODE_OK;
 }
@@ -179,7 +179,7 @@ static void sprd_dpu_atomic_enable(struct sprd_crtc *crtc)
 	struct sprd_dpu *dpu = crtc->priv;
 	static bool is_enable = true;
 
-	DRM_INFO("%s()\n", __func__);
+	DRM_DEBUG("%s()\n", __func__);
 	if (is_enable) {
 		/* workaround:
 		 * dpu r6p0 need resume after dsi resume on div6 scences
@@ -202,7 +202,7 @@ static void sprd_dpu_atomic_disable(struct sprd_crtc *crtc)
 {
 	struct sprd_dpu *dpu = crtc->priv;
 
-	DRM_INFO("%s()\n", __func__);
+	DRM_DEBUG("%s()\n", __func__);
 
 	sprd_crtc_wait_last_commit_complete(&crtc->base);
 
@@ -218,7 +218,7 @@ void sprd_dpu_atomic_disable_force(struct drm_crtc *crtc)
 	struct sprd_crtc *sprd_crtc = container_of(crtc, struct sprd_crtc, base);
 	struct sprd_dpu *dpu = sprd_crtc->priv;
 
-	DRM_INFO("%s()\n", __func__);
+	DRM_DEBUG("%s()\n", __func__);
 
 	/* dpu is not initialized,it should enable first! */
 	if (!dpu->ctx.enabled) {
@@ -267,7 +267,7 @@ static int sprd_dpu_enable_vblank(struct sprd_crtc *crtc)
 	struct sprd_dpu *dpu = crtc->priv;
 	struct dpu_context *ctx = &dpu->ctx;
 
-	DRM_INFO("%s()\n", __func__);
+	DRM_DEBUG("%s()\n", __func__);
 
 	if (dpu->core->enable_vsync && ctx->enabled)
 		dpu->core->enable_vsync(ctx);
@@ -280,7 +280,7 @@ static void sprd_dpu_disable_vblank(struct sprd_crtc *crtc)
 	struct sprd_dpu *dpu = crtc->priv;
 	struct dpu_context *ctx = &dpu->ctx;
 
-	DRM_INFO("%s()\n", __func__);
+	DRM_DEBUG("%s()\n", __func__);
 
 	if (dpu->core->disable_vsync && ctx->enabled)
 		dpu->core->disable_vsync(&dpu->ctx);
@@ -413,7 +413,7 @@ void sprd_dpu_resume(struct sprd_dpu *dpu)
 	sprd_dpu_enable(dpu);
 	enable_irq(dpu->ctx.irq);
 	sprd_iommu_restore(&dpu->dev);
-	DRM_INFO("dpu resume OK\n");
+	DRM_DEBUG("dpu resume OK\n");
 }
 
 void sprd_dpu_disable(struct sprd_dpu *dpu)
@@ -481,7 +481,7 @@ static int sprd_dpu_irq_request(struct sprd_dpu *dpu)
 		DRM_ERROR("error: dpu parse irq num failed\n");
 		return -EINVAL;
 	}
-	DRM_INFO("dpu irq_num = %d\n", irq_num);
+	DRM_DEBUG("dpu irq_num = %d\n", irq_num);
 
 	irq_set_status_flags(irq_num, IRQ_NOAUTOEN);
 	ret = devm_request_irq(&dpu->dev, irq_num, sprd_dpu_isr,
@@ -501,7 +501,7 @@ static struct sprd_dsi *sprd_dpu_dsi_attach(struct sprd_dpu *dpu)
 	struct device *dev;
 	struct sprd_dsi *dsi;
 
-	DRM_INFO("dpu attach dsi\n");
+	DRM_DEBUG("dpu attach dsi\n");
 	dev = sprd_disp_pipe_get_output(&dpu->dev);
 	if (!dev) {
 		DRM_ERROR("dpu pipe get output failed\n");
@@ -524,7 +524,7 @@ static int sprd_dpu_bind(struct device *dev, struct device *master, void *data)
 	struct sprd_crtc_capability cap = {};
 	struct sprd_plane *planes;
 
-	DRM_INFO("%s()\n", __func__);
+	DRM_DEBUG("%s()\n", __func__);
 
 	dpu->core->version(&dpu->ctx);
 	dpu->core->capability(&dpu->ctx, &cap);
@@ -551,7 +551,7 @@ static void sprd_dpu_unbind(struct device *dev, struct device *master,
 {
 	struct sprd_dpu *dpu = dev_get_drvdata(dev);
 
-	DRM_INFO("%s()\n", __func__);
+	DRM_DEBUG("%s()\n", __func__);
 
 	drm_crtc_cleanup(&dpu->crtc->base);
 }
@@ -591,7 +591,7 @@ static int of_get_logo_memory_info(struct sprd_dpu *dpu,
 
 	node = of_parse_phandle(np, "sprd,logo-memory", 0);
 	if (!node) {
-		DRM_INFO("no sprd,logo-memory specified\n");
+		DRM_DEBUG("no sprd,logo-memory specified\n");
 		return 0;
 	}
 

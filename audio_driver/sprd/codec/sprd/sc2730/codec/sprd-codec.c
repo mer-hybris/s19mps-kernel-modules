@@ -771,7 +771,7 @@ static int sprd_mixer_get(struct snd_kcontrol *kcontrol,
 	val = sprd_codec->dac_switch & (1 << mc->shift);
 	ucontrol->value.integer.value[0] = val;
 
-	sp_asoc_pr_info("dac switch %d,shift=%d,get=%d\n",
+	sp_asoc_pr_dbg("dac switch %d,shift=%d,get=%d\n",
 		sprd_codec->dac_switch, mc->shift,
 		(int)ucontrol->value.integer.value[0]);
 
@@ -795,7 +795,7 @@ static int sprd_mixer_put(struct snd_kcontrol *kcontrol,
 	else
 		sprd_codec->dac_switch &= ~val;
 
-	sp_asoc_pr_info("dac switch %d,shift=%d,set=%d\n",
+	sp_asoc_pr_dbg("dac switch %d,shift=%d,set=%d\n",
 		sprd_codec->dac_switch, mc->shift,
 		(int)ucontrol->value.integer.value[0]);
 
@@ -1292,7 +1292,7 @@ static int dalr_dc_os_event(struct snd_soc_dapm_widget *w,
 	if (i >= 20)
 		sp_asoc_pr_info("%s Dpop failed!\n", __func__);
 	else
-		sp_asoc_pr_info("%s Dpop sucessed! i=%d, ANA_STS1=0x%x\n",
+		sp_asoc_pr_dbg("%s Dpop sucessed! i=%d, ANA_STS1=0x%x\n",
 			__func__, i, state);
 
 	if (on)
@@ -1389,7 +1389,7 @@ static int sprd_codec_set_ad_sample_rate(struct snd_soc_component *codec,
 static int sprd_codec_sample_rate_setting(struct sprd_codec_priv *sprd_codec)
 {
 	int ret;
-	sp_asoc_pr_info("%s AD %u DA %u AD1 %u\n", __func__,
+	sp_asoc_pr_dbg("%s AD %u DA %u AD1 %u\n", __func__,
 		       sprd_codec->ad_sample_val, sprd_codec->da_sample_val,
 		       sprd_codec->ad1_sample_val);
 	ret = agdsp_access_enable();
@@ -1666,7 +1666,7 @@ static int chan_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *codec = snd_soc_dapm_to_component(w->dapm);
 	struct sprd_codec_priv *sprd_codec = snd_soc_component_get_drvdata(codec);
 
-	sp_asoc_pr_info("%s %s\n", sprd_codec_chan_get_name(chan_id),
+	sp_asoc_pr_dbg("%s %s\n", sprd_codec_chan_get_name(chan_id),
 			STR_ON_OFF(on));
 	sprd_codec_sample_rate_setting(sprd_codec);
 
@@ -1897,7 +1897,7 @@ static int rcv_depop_event(struct snd_soc_dapm_widget *w,
 	if (i >= 10)
 		sp_asoc_pr_info("%s Dpop failed!\n", __func__);
 	else
-		sp_asoc_pr_info("%s Dpop sucessed! i=%d\n",
+		sp_asoc_pr_dbg("%s Dpop sucessed! i=%d\n",
 			__func__, i);
 
 	return ret;
@@ -2116,7 +2116,7 @@ static int adie_loop_event(struct snd_soc_dapm_widget *w,
 
 	struct snd_soc_component *codec = snd_soc_dapm_to_component(w->dapm);
 
-	sp_asoc_pr_info("%s, Event is %s\n",
+	sp_asoc_pr_dbg("%s, Event is %s\n",
 		__func__, get_event_name(event));
 
 	switch (event) {
@@ -2147,7 +2147,7 @@ static int digital_loop_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *codec = snd_soc_dapm_to_component(w->dapm);
 	int ret = 0;
 
-	sp_asoc_pr_info("%s, Event is %s\n",
+	sp_asoc_pr_dbg("%s, Event is %s\n",
 			__func__, get_event_name(event));
 
 	sprd_codec_set_ad_sample_rate(codec, 48000, 0x0F, 0);
@@ -2893,7 +2893,7 @@ static int sprd_codec_info_get(struct snd_kcontrol *kcontrol,
 	chip_id = sci_get_ana_chip_id();
 	ver_id = sci_get_ana_chip_ver();
 
-	sp_asoc_pr_info("%s, chip_id = %d, ver_id=%d, AUDIO_CODEC_2730=%d\n",
+	sp_asoc_pr_dbg("%s, chip_id = %d, ver_id=%d, AUDIO_CODEC_2730=%d\n",
 		__func__, chip_id, ver_id, AUDIO_CODEC_2730);
 
 	ucontrol->value.integer.value[0] = AUDIO_CODEC_2730;
@@ -2914,7 +2914,7 @@ static int sprd_codec_product_info_get(struct snd_kcontrol *kcontrol,
 		ucontrol->value.integer.value[0] = CODEC_PRODUCT_JINGHE_PHASE3;
 	else
 		ucontrol->value.integer.value[0] = CODEC_PRODUCT_MAX;
-	sp_asoc_pr_info("%s, value = %ld, product_info = %x\n", __func__,
+	sp_asoc_pr_dbg("%s, value = %ld, product_info = %x\n", __func__,
 			ucontrol->value.integer.value[0], sprd_codec->codec_product_info);
 	return 0;
 }
@@ -2951,7 +2951,7 @@ static int sprd_codec_inter_pa_put(struct snd_kcontrol *kcontrol,
 	unsigned int invert = mc->invert;
 	unsigned int val;
 
-	sp_asoc_pr_info("Config inter PA 0x%lx\n",
+	sp_asoc_pr_dbg("Config inter PA 0x%lx\n",
 			ucontrol->value.integer.value[0]);
 
 	val = ucontrol->value.integer.value[0] & mask;
@@ -3129,7 +3129,7 @@ static int sprd_codec_fixed_rate_put(struct snd_kcontrol *kcontrol,
 
 	fixed_rate = ucontrol->value.integer.value[0];
 
-	pr_info("%s fixed rate=%u\n", __func__, fixed_rate);
+	pr_debug("%s fixed rate=%u\n", __func__, fixed_rate);
 	for (i = 0; i < CODEC_PATH_MAX; i++)
 		sprd_codec->fixed_sample_rate[i] = fixed_rate;
 
@@ -3222,7 +3222,7 @@ static int sprd_codec_ivsence_dmic_put(struct snd_kcontrol *kcontrol,
 		return -EINVAL;
 	}
 
-	sp_asoc_pr_info("%s using %s, val %d\n", __func__, e->texts[val], val);
+	sp_asoc_pr_dbg("%s using %s, val %d\n", __func__, e->texts[val], val);
 	sprd_codec->ivsence_dmic_type = val;
 
 	return 0;
@@ -3359,7 +3359,7 @@ static int sprd_codec_pcm_hw_params(struct snd_pcm_substream *substream,
 			fixed_rate[CODEC_PATH_DA] : rate;
 		sprd_codec_set_sample_rate(codec,
 			sprd_codec->da_sample_val, mask, shift);
-		sp_asoc_pr_info("Playback rate is [%u], ivsence_dmic_type %d\n",
+		sp_asoc_pr_dbg("Playback rate is [%u], ivsence_dmic_type %d\n",
 			sprd_codec->da_sample_val,
 			sprd_codec->ivsence_dmic_type);
 
@@ -3389,7 +3389,7 @@ static int sprd_codec_pcm_hw_params(struct snd_pcm_substream *substream,
 			fixed_rate[CODEC_PATH_AD] : rate;
 		sprd_codec_set_ad_sample_rate(codec,
 			sprd_codec->ad_sample_val, mask, shift);
-		sp_asoc_pr_info("Capture rate is [%u]\n",
+		sp_asoc_pr_dbg("Capture rate is [%u]\n",
 			sprd_codec->ad_sample_val);
 
 		sprd_codec->ad1_sample_val = fixed_rate[CODEC_PATH_AD1]
@@ -3397,7 +3397,7 @@ static int sprd_codec_pcm_hw_params(struct snd_pcm_substream *substream,
 		sprd_codec_set_ad_sample_rate(codec,
 			sprd_codec->ad1_sample_val,
 			ADC1_SRC_N_MASK, ADC1_SRC_N);
-		sp_asoc_pr_info("Capture(ADC1) rate is [%u]\n",
+		sp_asoc_pr_dbg("Capture(ADC1) rate is [%u]\n",
 			sprd_codec->ad1_sample_val);
 	}
 
@@ -3752,7 +3752,7 @@ static int sprd_codec_soc_probe(struct snd_soc_component *codec)
 	  if(ret < 0) {
 	  	pr_info("qzhu add control failed\n");
 	  }
-	  pr_info("qzhu add control success\n");
+	  pr_debug("qzhu add control success\n");
 	}
 #endif
 
@@ -4020,7 +4020,7 @@ static int sprd_codec_probe(struct platform_device *pdev)
 	u32 lrdat_sel;
 	struct regmap *pmu_apb_gpr;
 
-	pr_info("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 
 	if (!np) {
 		pr_err("%s: Only OF is supported yet!\n", __func__);
@@ -4106,7 +4106,7 @@ static int sprd_codec_probe(struct platform_device *pdev)
 	}
 
 	ana_chip_id  = sci_get_ana_chip_id() >> 16;
-	pr_info("ana_chip_id is 0x%x\n", ana_chip_id);
+	pr_debug("ana_chip_id is 0x%x\n", ana_chip_id);
 	ret = snd_soc_register_component(&pdev->dev,
 				     &soc_codec_dev_sprd_codec,
 				     sprd_codec_dai,

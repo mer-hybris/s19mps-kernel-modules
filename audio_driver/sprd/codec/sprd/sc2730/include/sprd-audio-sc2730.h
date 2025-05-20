@@ -18,7 +18,7 @@
 #include <linux/regmap.h>
 #include "sprd-audio.h"
 
-#define ADEBUG() pr_info("%s, line: %d\n", __func__, __LINE__)
+#define ADEBUG() pr_debug("%s, line: %d\n", __func__, __LINE__)
 
 #define CHIP_ID_2730 0x2730
 

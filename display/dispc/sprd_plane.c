@@ -144,7 +144,7 @@ static void sprd_plane_reset(struct drm_plane *drm_plane)
 	struct sprd_plane *plane = to_sprd_plane(drm_plane);
 	struct sprd_plane_state *state;
 
-	DRM_INFO("%s()\n", __func__);
+	DRM_DEBUG("%s()\n", __func__);
 
 	if (drm_plane->state) {
 		__drm_atomic_helper_plane_destroy_state(drm_plane->state);

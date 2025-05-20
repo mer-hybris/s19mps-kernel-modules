@@ -132,7 +132,7 @@ static int aud_pipe_open(struct inode *inode, struct file *filp)
 			return ret;
 		}
 		aud_pipe_dev->openned++;
-		pr_info("%s channel opened %u\n", __func__,
+		pr_debug("%s channel opened %u\n", __func__,
 			aud_pipe_dev->channel);
 		if (aud_pipe_dev->maxwritebufsize) {
 			aud_pipe_dev->tmp_buffer =
@@ -200,12 +200,12 @@ static ssize_t aud_pipe_read(struct file *filp,
 		goto error;
 	}
 
-	pr_info("user_msg_out.channel=%#hx\n", user_msg_out.channel);
-	pr_info("user_msg_out.command=%#hx\n", user_msg_out.command);
-	pr_info("user_msg_out.parameter0=%#x\n", user_msg_out.parameter0);
-	pr_info("user_msg_out.parameter1=%#x\n", user_msg_out.parameter1);
-	pr_info("user_msg_out.parameter2=%#x\n", user_msg_out.parameter2);
-	pr_info("user_msg_out.parameter3=%#x\n", user_msg_out.parameter3);
+	pr_debug("user_msg_out.channel=%#hx\n", user_msg_out.channel);
+	pr_debug("user_msg_out.command=%#hx\n", user_msg_out.command);
+	pr_debug("user_msg_out.parameter0=%#x\n", user_msg_out.parameter0);
+	pr_debug("user_msg_out.parameter1=%#x\n", user_msg_out.parameter1);
+	pr_debug("user_msg_out.parameter2=%#x\n", user_msg_out.parameter2);
+	pr_debug("user_msg_out.parameter3=%#x\n", user_msg_out.parameter3);
 
 	return ret;
 error:
@@ -222,11 +222,11 @@ static ssize_t aud_pipe_write(struct file *filp,
 	int timeout = -1;
 	struct aud_pipe_device *aud_pipe_dev = filp->private_data;
 
-	pr_info("%s:aud_pipe_data->channel:%d,count:%zu\n",
+	pr_debug("%s:aud_pipe_data->channel:%d,count:%zu\n",
 		__func__, aud_pipe_dev->channel, count);
 	if (filp->f_flags & O_NONBLOCK) {
 		timeout = 0;
-		pr_info("%s noblock %u,timeout = %d\n", __func__,
+		pr_debug("%s noblock %u,timeout = %d\n", __func__,
 			filp->f_flags & O_NONBLOCK, timeout);
 	}
 	if ((!aud_pipe_dev->writesync) &&
@@ -237,17 +237,17 @@ static ssize_t aud_pipe_write(struct file *filp,
 			ret = -EFAULT;
 			goto error;
 		}
-		pr_info("user_msg_in.channel=%#hx\n",
+		pr_debug("user_msg_in.channel=%#hx\n",
 			user_msg_from_user.channel);
-		pr_info("user_msg_in.command=%#hx\n",
+		pr_debug("user_msg_in.command=%#hx\n",
 			user_msg_from_user.command);
-		pr_info("user_msg_in.parameter0=%#x\n",
+		pr_debug("user_msg_in.parameter0=%#x\n",
 			user_msg_from_user.parameter0);
-		pr_info("user_msg_in.parameter1=%#x\n",
+		pr_debug("user_msg_in.parameter1=%#x\n",
 			user_msg_from_user.parameter1);
-		pr_info("user_msg_in.parameter2=%#x\n",
+		pr_debug("user_msg_in.parameter2=%#x\n",
 			user_msg_from_user.parameter2);
-		pr_info("user_msg_in.parameter3=%#x\n",
+		pr_debug("user_msg_in.parameter3=%#x\n",
 			user_msg_from_user.parameter3);
 		ret = aud_send_cmd_no_wait(aud_pipe_dev->channel,
 			user_msg_from_user.command,
@@ -284,7 +284,7 @@ static ssize_t aud_pipe_write(struct file *filp,
 			goto error;
 		}
 		ret = count;
-		pr_info("%s aud_pipe_data->channel:%d,count:%zu\n",
+		pr_debug("%s aud_pipe_data->channel:%d,count:%zu\n",
 			__func__, aud_pipe_dev->channel, count);
 	}
 	return ret;
@@ -310,10 +310,10 @@ static long aud_pipe_ioctl(struct file *filp,
 	case AUDIO_PIPE_BTHAL_STATE_SET:
 		if (get_user(g_bthal_state, (u32 __user *)argp))
 			return -EFAULT;
-		pr_info("BTHAL_STATE_SET:%d\n", g_bthal_state);
+		pr_debug("BTHAL_STATE_SET:%d\n", g_bthal_state);
 		break;
 	case AUDIO_PIPE_BTHAL_STATE_GET:
-		pr_info("BTHAL_STATE_GET:%d\n", g_bthal_state);
+		pr_debug("BTHAL_STATE_GET:%d\n", g_bthal_state);
 		if (put_user(g_bthal_state, (u32 __user *)argp))
 			return -EFAULT;
 		break;
@@ -423,7 +423,7 @@ static int aud_pipe_parse_dt(struct device *dev,
 		goto error;
 	}
 	ret = 0;
-	pr_info("aud_pipe_data->channel:%d\n", aud_pipe_dev->channel);
+	pr_debug("aud_pipe_data->channel:%d\n", aud_pipe_dev->channel);
 
 	return ret;
 error:
@@ -447,7 +447,7 @@ static int audio_pipe_probe(struct platform_device *pdev)
 		pr_err("%s parse dt failed\n", __func__);
 		return rval;
 	}
-	pr_info("%s:name=%s\n", __func__,
+	pr_debug("%s:name=%s\n", __func__,
 		aud_pipe_dev->device_name);
 	aud_pipe_dev->misc_dev.minor = MISC_DYNAMIC_MINOR;
 	aud_pipe_dev->misc_dev.name = aud_pipe_dev->device_name;

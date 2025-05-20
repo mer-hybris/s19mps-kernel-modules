@@ -915,7 +915,7 @@ static void dpu_stop(struct dpu_context *ctx)
 
 	dpu_wait_stop_done(ctx);
 	ctx->evt_update = false;
-	pr_info("dpu stop\n");
+	pr_debug("dpu stop\n");
 }
 
 static void dpu_run(struct dpu_context *ctx)
@@ -923,7 +923,7 @@ static void dpu_run(struct dpu_context *ctx)
 	DPU_REG_SET(ctx->base + REG_DPU_CTRL, BIT(4) | BIT(0));
 	ctx->stopped = false;
 
-	pr_info("dpu run\n");
+	pr_debug("dpu run\n");
 
 	if (ctx->if_type == SPRD_DPU_IF_EDPI) {
 		/*
@@ -3257,7 +3257,7 @@ static int dpu_modeset(struct dpu_context *ctx,
 	}
 
 	ctx->wb_size_changed = true;
-	pr_info("begin switch to %u x %u\n", mode->hdisplay, mode->vdisplay);
+	pr_debug("begin switch to %u x %u\n", mode->hdisplay, mode->vdisplay);
 
 	return 0;
 }

@@ -874,7 +874,7 @@ int kbase_platform_set_freq_volt(int freq, int volt)
 
 	freq = freq/FREQ_KHZ;
 	index = freq_search(gpu_dvfs_ctx.freq_list, gpu_dvfs_ctx.freq_list_len, freq);
-	printk(KERN_ERR "mali GPU_DVFS %s index=%d cur_freq=%d cur_volt=%d --> freq=%d volt=%d gpu_power_on=%d gpu_clock_on=%d \n",
+	printk(KERN_DEBUG "mali GPU_DVFS %s index=%d cur_freq=%d cur_volt=%d --> freq=%d volt=%d gpu_power_on=%d gpu_clock_on=%d \n",
 		__func__, index, gpu_dvfs_ctx.freq_cur->freq, gpu_dvfs_ctx.cur_voltage, freq, volt,
 		gpu_dvfs_ctx.gpu_power_on, gpu_dvfs_ctx.gpu_clock_on);
 	if (0 <= index)
@@ -1040,7 +1040,7 @@ void gpu_polling_power_on(struct kbase_device *kbdev)
 				}
 			}
 			if(poll>=5){//success
-				printk(KERN_INFO "SPRDDEBUG gpu shader core power on polling SUCCESS !!");
+				//printk(KERN_INFO "SPRDDEBUG gpu shader core power on polling SUCCESS !!");
 				break;
 			}
 		}

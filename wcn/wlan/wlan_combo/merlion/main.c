@@ -276,7 +276,7 @@ static netdev_tx_t sprdwl_start_xmit(struct sk_buff *skb, struct net_device *nde
 	/* send 802.1x or WAPI frame from cmd channel */
 	if (skb->protocol == cpu_to_be16(ETH_P_PAE) ||
 		skb->protocol == cpu_to_be16(WAPI_TYPE)) {
-		wl_err("send %s frame by WIFI_CMD_TX_DATA\n",
+		wl_debug("send %s frame by WIFI_CMD_TX_DATA\n",
 		       skb->protocol == cpu_to_be16(ETH_P_PAE) ?
 		       "802.1X" : "WAI");
 		if (sprdwl_xmit_data2cmd_wq(skb, ndev) == -EAGAIN)
@@ -368,9 +368,9 @@ static int sprdwl_open(struct net_device *ndev)
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 	struct sprdwl_intf *intf = g_intf;
 	int ret;
-	netdev_info(ndev, "%s\n", __func__);
+	netdev_dbg(ndev, "%s\n", __func__);
 
-	netdev_info(ndev, "Power on wcn (%d time)\n", atomic_read(&intf->power_cnt));
+	netdev_dbg(ndev, "Power on wcn (%d time)\n", atomic_read(&intf->power_cnt));
 
 	if ((vif->mode == SPRDWL_MODE_AP || vif->mode == SPRDWL_MODE_STATION) &&
 		(atomic_read(&intf->power_cnt) == 1)) {
@@ -396,7 +396,7 @@ static int sprdwl_close(struct net_device *ndev)
 	struct sprdwl_vif *vif = netdev_priv(ndev);
 	struct sprdwl_intf *intf = g_intf;
 
-	netdev_info(ndev, "%s\n", __func__);
+	netdev_dbg(ndev, "%s\n", __func__);
 
 	sprdwl_scan_done(vif, true);
 	sprdwl_sched_scan_done(vif, true);
@@ -408,7 +408,7 @@ static int sprdwl_close(struct net_device *ndev)
 		atomic_set(&intf->block_cmd_after_close, 1);
 
 	sprdwl_uninit_fw(vif);
-	netdev_info(ndev, "Power off WCN (%d time)\n", atomic_read(&intf->power_cnt));
+	netdev_dbg(ndev, "Power off WCN (%d time)\n", atomic_read(&intf->power_cnt));
 	sprdwl_chip_set_power(intf, false);
 
 	if (atomic_read(&intf->block_cmd_after_close) == 1)
@@ -428,7 +428,7 @@ static void sprdwl_tx_timeout(struct net_device *ndev, unsigned int txqueue)
 static void sprdwl_tx_timeout(struct net_device *ndev)
 #endif
 {
-	netdev_info(ndev, "%s\n", __func__);
+	netdev_dbg(ndev, "%s\n", __func__);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
 	ndev->trans_start = jiffies;
 #endif
@@ -609,7 +609,7 @@ static int sprdwl_priv_cmd(struct net_device *ndev, struct ifreq *ifr)
 			feat = priv->wnm_ft_support;
 
 		sprintf(command, "%s %d", CMD_11V_GET_CFG, feat);
-		netdev_info(ndev, "%s: get 11v feat\n", __func__);
+		netdev_dbg(ndev, "%s: get 11v feat\n", __func__);
 		if (copy_to_user(priv_cmd.buf, command, priv_cmd.total_len)) {
 			netdev_err(ndev, "%s: get 11v copy failed\n", __func__);
 			ret = -EFAULT;
@@ -620,7 +620,7 @@ static int sprdwl_priv_cmd(struct net_device *ndev, struct ifreq *ifr)
 		int skip = strlen(CMD_11V_SET_CFG) + 1;
 		int cfg = command[skip];
 
-		netdev_info(ndev, "%s: 11v cfg %d\n", __func__, cfg);
+		netdev_dbg(ndev, "%s: 11v cfg %d\n", __func__, cfg);
 		sprdwl_set_11v_feature_support(priv, vif->ctx_id, cfg);
 	} else if (!strncasecmp(command, CMD_11V_WNM_SLEEP,
 				strlen(CMD_11V_WNM_SLEEP))) {
@@ -630,7 +630,7 @@ static int sprdwl_priv_cmd(struct net_device *ndev, struct ifreq *ifr)
 		if (status)
 			interval = command[skip + 1];
 
-		netdev_info(ndev, "%s: 11v sleep, status %d, interval %d\n",
+		netdev_dbg(ndev, "%s: 11v sleep, status %d, interval %d\n",
 			    __func__, status, interval);
 		sprdwl_set_11v_sleep_mode(priv, vif->ctx_id, status, interval);
 	} else if (!strncasecmp(command, CMD_SET_COUNTRY,
@@ -644,7 +644,7 @@ static int sprdwl_priv_cmd(struct net_device *ndev, struct ifreq *ifr)
 			ret = -EINVAL;
 			goto out;
 		}
-		netdev_info(ndev, "%s country code:%c%c\n", __func__,
+		netdev_dbg(ndev, "%s country code:%c%c\n", __func__,
 			    toupper(country[0]), toupper(country[1]));
 		ret = regulatory_hint(priv->wiphy, country);
 	} else if (!strncasecmp(command, CMD_SET_MAX_CLIENTS,
@@ -659,11 +659,11 @@ static int sprdwl_priv_cmd(struct net_device *ndev, struct ifreq *ifr)
 						     n_clients);
 	} else if (!strncasecmp(command, CMD_BT_COEX_MODE,
 			strlen(CMD_BT_COEX_MODE))) {
-		netdev_info(ndev, "%s recieved command BTCOEXMODE", __func__);
+		netdev_dbg(ndev, "%s recieved command BTCOEXMODE", __func__);
 		ret = 0;
 	} else if (!strncasecmp(command, CMD_BT_COEX_SCAN,
 			strlen(CMD_BT_COEX_SCAN))) {
-		netdev_info(ndev, "%s recieved command BTCOEXSCAN", __func__);
+		netdev_dbg(ndev, "%s recieved command BTCOEXSCAN", __func__);
 		ret = 0;
 	} else {
 		netdev_err(ndev, "%s command not support\n", __func__);
@@ -716,7 +716,7 @@ int sprdwl_set_miracast(struct net_device *ndev, struct ifreq *ifr)
 	subtype = *(unsigned short *)command;
 	if (subtype == 5) {
 		value = *((int *)(command + 2 * sizeof(unsigned short)));
-		netdev_info(ndev, "%s: set miracast value : %d\n",
+		netdev_dbg(ndev, "%s: set miracast value : %d\n",
 				__func__, value);
 		ret = sprdwl_enable_miracast(priv, vif->mode, value);
 	}
@@ -762,7 +762,7 @@ static int sprdwl_set_power_save(struct net_device *ndev, struct ifreq *ifr)
 		ret = kstrtoint(command + skip, 0, &value);
 		if (ret)
 			goto out;
-		netdev_info(ndev, "%s: set suspend mode,value : %d\n",
+		netdev_dbg(ndev, "%s: set suspend mode,value : %d\n",
 			    __func__, value);
 		priv->is_screen_off = value;
 		ret = sprdwl_power_save(priv, vif->ctx_id,
@@ -773,7 +773,7 @@ static int sprdwl_set_power_save(struct net_device *ndev, struct ifreq *ifr)
 		ret = kstrtoint(command + skip, 0, &value);
 		if (ret)
 			goto out;
-		netdev_info(ndev, "%s: set fcc channel,value : %d\n",
+		netdev_dbg(ndev, "%s: set fcc channel,value : %d\n",
 			    __func__, value);
 		ret = sprdwl_power_save(priv, vif->ctx_id,
 					SPRDWL_SET_FCC_CHANNEL, value);
@@ -783,7 +783,7 @@ static int sprdwl_set_power_save(struct net_device *ndev, struct ifreq *ifr)
 		ret = kstrtoint(command + skip, 0, &value);
 		if (ret)
 			goto out;
-		netdev_info(ndev, "%s: set sar,value : %d\n",
+		netdev_dbg(ndev, "%s: set sar,value : %d\n",
 			    __func__, value);
 		ret = sprdwl_set_sar(priv, vif, SPRDWL_SET_SAR_ABSOLUTE, value);
 	} else {
@@ -902,13 +902,13 @@ static int sprdwl_set_p2p_mac(struct net_device *ndev, struct ifreq *ifr)
 	}
 
 	memcpy(addr, command + 11, ETH_ALEN);
-	netdev_info(ndev, "p2p dev random addr is %pM\n", addr);
+	netdev_dbg(ndev, "p2p dev random addr is %pM\n", addr);
 	if (is_multicast_ether_addr(addr)) {
 		netdev_err(ndev, "%s invalid addr\n", __func__);
 		ret = -EINVAL;
 		goto out;
 	} else if (is_zero_ether_addr(addr)) {
-		netdev_info(ndev, "restore to vif addr if addr is zero \n");
+		netdev_dbg(ndev, "restore to vif addr if addr is zero \n");
 		memcpy(addr, vif->mac, ETH_ALEN);
 	}
 	ret = wlan_cmd_set_rand_mac(vif->priv, 2,
@@ -923,7 +923,7 @@ static int sprdwl_set_p2p_mac(struct net_device *ndev, struct ifreq *ifr)
 	list_for_each_entry_safe_reverse(tmp1, tmp2,
 			&priv->vif_list, vif_node) {
 			if (tmp1->mode == SPRDWL_MODE_P2P_DEVICE) {
-				netdev_info(ndev, "get p2p device, set addr for wdev\n");
+				netdev_dbg(ndev, "get p2p device, set addr for wdev\n");
 				memcpy(tmp1->wdev.address, addr, ETH_ALEN);
 			}
 	}
@@ -1095,7 +1095,7 @@ static void sprdwl_set_multicast(struct net_device *ndev)
 	u8 *mac_addr;
 
 	mc_count = netdev_mc_count(ndev);
-	netdev_info(ndev, "%s multicast address num: %d\n", __func__, mc_count);
+	netdev_dbg(ndev, "%s multicast address num: %d\n", __func__, mc_count);
 	if (mc_count > priv->max_mc_mac_addrs)
 		return;
 
@@ -1103,7 +1103,7 @@ static void sprdwl_set_multicast(struct net_device *ndev)
 	if ((ndev->flags & IFF_MULTICAST) && (mc_address_changed(ndev))) {
 		mac_addr = vif->mc_filter->mac_addr;
 		netdev_for_each_mc_addr(ha, ndev) {
-			netdev_info(ndev, "%s set mac: %pM\n", __func__,
+			netdev_dbg(ndev, "%s set mac: %pM\n", __func__,
 				    ha->addr);
 			if ((ha->addr[0] != 0x33 || ha->addr[1] != 0x33) &&
 			    (ha->addr[0] != 0x01 || ha->addr[1] != 0x00 ||
@@ -1389,7 +1389,7 @@ void clean_scan_list(struct sprdwl_vif *vif)
 		kfree(node);
 		count++;
 	}
-	wl_err("delete scan node num:%d\n", count);
+	wl_debug("delete scan node num:%d\n", count);
 }
 
 #ifdef ACS_SUPPORT
@@ -1436,7 +1436,7 @@ static unsigned short cal_total_beacon(struct sprdwl_vif *vif,
 		}
 	}
 
-	netdev_info(vif->ndev, "survey chan: %d, total beacon: %d!\n",
+	netdev_dbg(vif->ndev, "survey chan: %d, total beacon: %d!\n",
 		    chan, total_beacon);
 	return total_beacon;
 }

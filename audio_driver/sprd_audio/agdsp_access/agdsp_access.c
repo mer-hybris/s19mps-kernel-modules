@@ -453,7 +453,7 @@ int agdsp_access_enable(void)
 		if (ret != 0)
 			pr_err("%s, regmap_read ap_access_ena_reg error!\n", __func__);
 		else
-			pr_info("%s, ap_access_ena_reg (wake up dsp) val = 0x%x\n",
+			pr_dbg("%s, ap_access_ena_reg (wake up dsp) val = 0x%x\n",
 				__func__, val);
 		msg_val[msg_index] = 100;
 		ret = mbox_send_message(g_agdsp_mboxchan, (void *)&msg_val[msg_index]);
@@ -500,7 +500,7 @@ int agdsp_access_enable(void)
 		if (ret != 0)
 			pr_err("%s, regmap_read ap_access_ena_reg error!\n", __func__);
 		else
-			pr_info("%s, ap_access_ena_reg (wake up done) val = 0x%x\n",
+			pr_dbg("%s, ap_access_ena_reg (wake up done) val = 0x%x\n",
 				__func__, val);
 	}
 
@@ -863,7 +863,7 @@ static int agdsp_access_probe(struct platform_device *pdev)
 		&auto_agcp_access);
 	if (ret)
 		auto_agcp_access = 0;
-	pr_info("%s auto agcp access = %d\n", __func__, auto_agcp_access);
+	pr_dbg("%s auto agcp access = %d\n", __func__, auto_agcp_access);
 	agcp_ahb = syscon_regmap_lookup_by_phandle(node,
 		"sprd,syscon-agcp-ahb");
 	pmu_apb = syscon_regmap_lookup_by_phandle(node,

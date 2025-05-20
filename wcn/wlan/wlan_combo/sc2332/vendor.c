@@ -2069,7 +2069,7 @@ static void vendor_report_gscan_result(struct sprd_vif *vif, u32 report_event,
 	tsf = jiffies;
 	beacon_interval = le16_to_cpu(mgmt->u.probe_resp.beacon_int);
 	capability = le16_to_cpu(mgmt->u.probe_resp.capab_info);
-	netdev_info(vif->ndev, "   %s, %pM, channel %2u, signal %d\n",
+	netdev_dbg(vif->ndev, "   %s, %pM, channel %2u, signal %d\n",
 		    ieee80211_is_probe_resp(mgmt->frame_control)
 		    ? "proberesp" : "beacon   ", mgmt->bssid, chan, rssi);
 

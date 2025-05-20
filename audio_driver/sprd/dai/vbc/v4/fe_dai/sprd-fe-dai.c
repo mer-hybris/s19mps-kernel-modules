@@ -285,7 +285,7 @@ static bool is_normal_playback_use_24bit(
 	is_normal_playback = ((fe_dai->id == FE_DAI_ID_NORMAL_AP01) &&
 		(substream->stream == SNDRV_PCM_STREAM_PLAYBACK));
 	if (is_24bit && is_normal_playback) {
-		pr_info("%s is use 24bit\n", __func__);
+		pr_debug("%s is use 24bit\n", __func__);
 		return true;
 	}
 
@@ -307,7 +307,7 @@ static void sprd_dma_config(struct snd_pcm_substream *substream,
 	case FE_DAI_ID_FM_DSP:
 	case FE_DAI_ID_HFP:
 	default:
-		pr_info("%s %s do not use dma\n", __func__,
+		pr_debug("%s %s do not use dma\n", __func__,
 			fe_dai_id_to_str(fe_dai->id));
 	break;
 	case FE_DAI_ID_NORMAL_AP01:
@@ -349,7 +349,7 @@ static void sprd_dma_config(struct snd_pcm_substream *substream,
 					= ((rate * VBC_AUDRCD01_FRAGMENT) /
 					DEFAULT_RATE) &
 					~BIT(0);
-				pr_info("%s rate = %u, framlen=%u", __func__,
+				pr_debug("%s rate = %u, framlen=%u", __func__,
 				rate,
 				vbc_pcm_normal_ap01_c.desc.fragmens_len);
 			}
@@ -751,7 +751,7 @@ static int fe_hw_params(struct snd_pcm_substream *substream,
 
 	int ret;
 
-	pr_info("%s fe dai: %s(%d) %s\n", __func__,
+	pr_debug("%s fe dai: %s(%d) %s\n", __func__,
 		fe_dai_id_to_str(fe_dai->id),
 		fe_dai->id, stream_to_str(substream->stream));
 
@@ -800,7 +800,7 @@ static int fe_hw_free(struct snd_pcm_substream *substream,
 {
 	int ret;
 
-	pr_info("%s fe dai: %s(%d) %s\n", __func__,
+	pr_debug("%s fe dai: %s(%d) %s\n", __func__,
 		fe_dai_id_to_str(fe_dai->id),
 		fe_dai->id, stream_to_str(substream->stream));
 	ret = agdsp_access_enable();

@@ -499,7 +499,7 @@ static int sprdwl_cmd_send_to_ic(struct sprdwl_priv *priv,
 	 */
 	sprdwl_cmd_set(hdr);
 
-	wl_warn("[%u]ctx_id %d send[%s]\n",
+	wl_debug("[%u]ctx_id %d send[%s]\n",
 		le32_to_cpu(hdr->mstime),
 		hdr->common.ctx_id,
 		cmd2str(hdr->cmd_id));
@@ -670,7 +670,7 @@ int sprdwl_cmd_send_recv(struct sprdwl_priv *priv,
 			plen = le16_to_cpu(hdr->plen) - sizeof(*hdr);
 			*rlen = min(*rlen, plen);
 			memcpy(rbuf, hdr->paydata, *rlen);
-			wl_warn("ctx_id:%d cmd_id:%d [%s]rsp received\n",
+			wl_debug("ctx_id:%d cmd_id:%d [%s]rsp received\n",
 				hdr->common.ctx_id, cmd_id, cmd2str(cmd_id));
 			if (cmd_id == WIFI_CMD_OPEN)
 				rbuf[0] = hdr->common.ctx_id;
@@ -1156,7 +1156,7 @@ int sprdwl_power_save(struct sprdwl_priv *priv, u8 vif_ctx_id,
 	p = (struct sprdwl_cmd_power_save *)msg->data;
 	p->sub_type = sub_type;
 	p->value = status;
-	wl_err("%s: WIFI_CMD_POWER_SAVE sub_type: %d, status: %d\n", __func__, p->sub_type, p->value);
+	wl_debug("%s: WIFI_CMD_POWER_SAVE sub_type: %d, status: %d\n", __func__, p->sub_type, p->value);
 	return sprdwl_cmd_send_recv(priv, msg, CMD_WAIT_TIMEOUT, NULL, NULL);
 }
 
@@ -2720,7 +2720,7 @@ int sprdwl_cmd_host_wakeup_fw(struct sprdwl_priv *priv, u8 ctx_id)
 	p = (struct sprdwl_cmd_power_save *)msg->data;
 	p->sub_type = SPRDWL_HOST_WAKEUP_FW;
 	p->value = 0;
-	wl_err("%s: WIFI_CMD_POWER_SAVE sub_type: %d, status: %d\n", __func__, p->sub_type, p->value);
+	wl_debug("%s: WIFI_CMD_POWER_SAVE sub_type: %d, status: %d\n", __func__, p->sub_type, p->value);
 
 	ret =  sprdwl_cmd_send_recv(priv, msg, CMD_WAIT_TIMEOUT,
 				    &r_buf, &r_len);
@@ -2823,7 +2823,7 @@ unsigned short sprdwl_rx_rsp_process(struct sprdwl_priv *priv, u8 *msg, unsigned
 	spin_lock_bh(&cmd->lock);
 	if (!cmd->data && SPRDWL_GET_LE32(hdr->mstime) == cmd->mstime &&
 	    hdr->cmd_id == cmd->cmd_id) {
-		wl_warn("ctx_id %d recv rsp[%s]\n",
+		wl_debug("ctx_id %d recv rsp[%s]\n",
 			hdr->common.ctx_id, cmd2str(hdr->cmd_id));
 		if (unlikely(hdr->status != 0)) {
 			wl_err("%s ctx_id %d recv rsp[%s] status[%s]\n",
@@ -2878,23 +2878,23 @@ void sprdwl_event_scan_done(struct sprdwl_vif *vif, u8 *data, u16 len)
 	switch (p->type) {
 	case SPRDWL_SCAN_DONE:
 		sprdwl_scan_done(vif, false);
-		netdev_info(vif->ndev, "%s got %d BSSes\n", __func__,
+		netdev_dbg(vif->ndev, "%s got %d BSSes\n", __func__,
 			    bss_count);
 		break;
 	case SPRDWL_SCHED_SCAN_DONE:
 		sprdwl_sched_scan_done(vif, false);
-		netdev_info(vif->ndev, "%s schedule scan got %d BSSes\n",
+		netdev_dbg(vif->ndev, "%s schedule scan got %d BSSes\n",
 			    __func__, bss_count);
 		break;
 	case SPRDWL_GSCAN_DONE:
 		bucket_id = ((struct sprdwl_event_gscan_done *)data)->bucket_id;
 		sprdwl_gscan_done(vif, bucket_id);
-		netdev_info(vif->ndev, "%s gscan got %d bucketid done\n",
+		netdev_dbg(vif->ndev, "%s gscan got %d bucketid done\n",
 			    __func__, bucket_id);
 		break;
 	case SPRDWL_SCAN_ABORT_DONE:
 		sprdwl_scan_done(vif, true);
-		netdev_info(vif->ndev, "%s scan abort got %d BSSes\n",
+		netdev_dbg(vif->ndev, "%s scan abort got %d BSSes\n",
 			    __func__, bss_count);
 		break;
 	case SPRDWL_SCAN_ERROR:
@@ -3439,7 +3439,7 @@ int sprdwl_fw_power_down_ack(struct sprdwl_priv *priv, u8 ctx_id)
 
 	p = (struct sprdwl_cmd_power_save *)msg->data;
 	p->sub_type = SPRDWL_FW_PWR_DOWN_ACK;
-	wl_err("%s, WIFI_CMD_POWER_DOWN sub_type %d\n", __func__, p->sub_type);
+	wl_debug("%s, WIFI_CMD_POWER_DOWN sub_type %d\n", __func__, p->sub_type);
 
 	if (atomic_read(&tx_msg->tx_list_qos_pool.ref) > 0 ||
 	    !list_empty(&tx_msg->xmit_msg_list.to_send_list) ||
@@ -3662,7 +3662,7 @@ unsigned short sprdwl_rx_event_process(struct sprdwl_priv *priv, u8 *msg)
 		return plen;
 	}
 
-	wl_warn("[%u]ctx_id %d recv[%s]len: %d\n",
+	wl_debug("[%u]ctx_id %d recv[%s]len: %d\n",
 		le32_to_cpu(hdr->mstime), ctx_id,
 		evt2str(hdr->cmd_id), plen);
 

@@ -150,7 +150,7 @@ void mm_flush_buffer(struct sprdwl_mm *mm_entry)
 	skb_queue_purge(&mm_entry->buffer_list);
 	mm_free_addr_buf(mm_entry);
 	atomic_set(&mm_entry->alloc_num, 0);
-	wl_err("%s, %d, alloc_num set to 0\n", __func__, __LINE__);
+	wl_debug("%s, %d, alloc_num set to 0\n", __func__, __LINE__);
 }
 
 static inline void mm_alloc_addr_buf(struct sprdwl_mm *mm_entry)

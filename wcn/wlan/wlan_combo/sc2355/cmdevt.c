@@ -3935,7 +3935,7 @@ unsigned short sc2355_rx_evt_process(struct sprd_priv *priv, u8 *msg)
 		return plen;
 	}
 
-	pr_warn("[%u]ctx_id %d recv[%s]len: %d,rsp_cnt=%d\n",
+	pr_debug("[%u]ctx_id %d recv[%s]len: %d,rsp_cnt=%d\n",
 		le32_to_cpu(hdr->mstime), ctx_id,
 		cmdevt_evt2str(hdr->cmd_id), plen, hdr->rsp_cnt);
 
