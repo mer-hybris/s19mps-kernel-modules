@@ -1,0 +1,42 @@
+#
+# sc7a20.ko
+#
+# Kbuild: for kernel building external module
+#
+# Note:
+# - Please refer to modules/sample/Kbuild to find out what should be
+#   done is this Kbuild file
+#
+
+#
+# Source List
+#
+KO_MODULE_NAME := sc7a20
+KO_MODULE_PATH := $(src)
+KO_MODULE_SRC  :=
+
+KO_MODULE_SRC += $(wildcard $(KO_MODULE_PATH)/*.c)
+
+#
+# Build Options
+#
+
+ifeq ($(BUILD),debug)
+ccflags-y += -DDEBUG
+endif
+ccflags-y += "-Wno-error"
+
+
+ifneq ($(findstring $(BOARD_ACC_INSTALL), 0 1 2 3 4 5 6 7),)
+ccflags-y += -DCONFIG_SC7A20_POSITION=$(BOARD_ACC_INSTALL)
+else
+ccflags-y += -DCONFIG_SC7A20_POSITION=4
+endif
+
+
+#
+# Final Objects
+#
+obj-m := $(KO_MODULE_NAME).o
+# Comment it if the only object file has the same name with module
+# $(KO_MODULE_NAME)-y := $(patsubst $(src)/%.c,%.o,$(KO_MODULE_SRC))

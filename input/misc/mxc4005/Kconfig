@@ -1,0 +1,9 @@
+config INPUT_MXC4005
+	tristate "MXC4005 sensor"
+	depends on (I2C) && SYSFS
+	help
+	  This driver support the STMicroelectronics LIS2DH/LIS2DH12 sensor.
+	  Say Y here if you have a LIS2DH/LIS2DH12 device on the board, else say N.
+
+	  To compile this driver as a module, choose M here. The module
+	  will be called lis2dh.

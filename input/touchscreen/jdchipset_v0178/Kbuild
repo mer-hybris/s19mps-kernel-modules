@@ -1,0 +1,45 @@
+#
+# jadard_ts.ko
+#
+# Kbuild: for kernel building external module
+#
+# Note:
+# - Please refer to modules/sample/Kbuild to find out what should be
+#   done is this Kbuild file
+#
+
+#
+# Source List
+#
+KO_MODULE_NAME := jadard_ts
+KO_MODULE_PATH := $(src)
+KO_MODULE_SRC  :=
+
+KO_MODULE_SRC += $(wildcard $(KO_MODULE_PATH)/*.c)
+KO_MODULE_SRC += $(wildcard $(KO_MODULE_PATH)/../tp_common/*.c)
+
+#
+# Build Options
+#
+ccflags-y += -DCONFIG_TOUCHSCREEN_JADARD_DEBUG=y
+ccflags-y += -DCONFIG_TOUCHSCREEN_JADARD_SORTING=y
+# ccflags-y += -D__JADARD_KMODULE__
+ccflags-y += -DDEBUG
+ccflags-y += -I$(KO_MODULE_PATH)/../tp_common/
+ccflags-y += -std=gnu99 -Wno-error=vla -Wno-error=unused-function
+
+ifeq ($(SENSOR_HUB_VIRTUAL_PROXIMITY),touchscreen)
+KO_MODULE_SRC += $(wildcard $(KO_MODULE_PATH)/../tp_shub/*.c)
+ccflags-y += -DSENSORHUB_PROXIMITY_TOUCHSCREEN
+obj-y += revo_sensorhub.o
+ccflags-y += -I$(KO_MODULE_PATH)/../tp_shub/ -I$(BSP_KERNEL_PATH)/drivers/iio/sprd_hub/
+endif
+
+#
+# Final Objects
+#
+obj-m := $(KO_MODULE_NAME).o
+$(KO_MODULE_NAME)-y := $(patsubst $(src)/%.c,%.o,$(KO_MODULE_SRC))
+
+# Comment it if the only object file has the same name with module
+

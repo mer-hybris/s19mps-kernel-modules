@@ -1,0 +1,60 @@
+#
+# mxc400x.ko
+#
+# Kbuild: for kernel building external module
+#
+# Note:
+# - Please refer to modules/sample/Kbuild to find out what should be
+#   done is this Kbuild file
+#
+
+#
+# Source List
+#
+KO_MODULE_NAME := mxc400x
+KO_MODULE_PATH := $(src)
+KO_MODULE_SRC  :=
+
+KO_MODULE_SRC += $(wildcard $(KO_MODULE_PATH)/*.c)
+
+#
+# Build Options
+#
+
+ifeq ($(BUILD),debug)
+ccflags-y += -DDEBUG
+endif
+ccflags-y += "-Wno-error"
+
+ifeq ($(CONFIG_SOC_PIKE2), y)
+ccflags-y += -DI2C_STATIC_BUS_NUM=1
+else
+ccflags-y += -DI2C_STATIC_BUS_NUM=2
+endif
+
+
+ifeq ($(BOARD_HAVE_ACC), Sc7a20_Mxc400x)
+
+ifneq ($(findstring $(BOARD_ACC_INSTALL_2), 0 1 2 3 4 5 6 7),)
+ccflags-y += -DCONFIG_MXC400X_POSITION=$(BOARD_ACC_INSTALL_2)
+else
+ccflags-y += -DCONFIG_MXC400X_POSITION=1
+endif
+
+else
+
+ifneq ($(findstring $(BOARD_ACC_INSTALL), 0 1 2 3 4 5 6 7),)
+ccflags-y += -DCONFIG_MXC400X_POSITION=$(BOARD_ACC_INSTALL)
+else
+ccflags-y += -DCONFIG_MXC400X_POSITION=1
+endif
+
+endif
+
+
+#
+# Final Objects
+#
+obj-m := $(KO_MODULE_NAME).o
+# Comment it if the only object file has the same name with module
+# $(KO_MODULE_NAME)-y := $(patsubst $(src)/%.c,%.o,$(KO_MODULE_SRC))

@@ -1,0 +1,14 @@
+KO_MODULE_NAME := smp_aw87xxx
+KO_MODULE_PATH := $(src)
+KO_MODULE_SRC  :=
+KO_MODULE_SRC += $(wildcard $(KO_MODULE_PATH)/*.c)
+#
+# Build Options
+#
+ccflags-y += -DDEBUG
+ccflags-y += -Wno-error=vla-extension -I$(BSP_KERNEL_PATH)/drivers/gpio/
+#
+# Final Objects
+#
+obj-m := $(KO_MODULE_NAME).o
+$(KO_MODULE_NAME)-y := $(patsubst $(src)/%.c,%.o,$(KO_MODULE_SRC))

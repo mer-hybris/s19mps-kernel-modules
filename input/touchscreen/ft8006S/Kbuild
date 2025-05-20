@@ -1,0 +1,54 @@
+#
+# ft8006s.ko
+#
+# Kbuild: for kernel building external module
+#
+# Note:
+# - Please refer to modules/sample/Kbuild to find out what should be
+#   done is this Kbuild file
+#
+
+#
+# Source List
+#
+
+KO_MODULE_NAME := ft8006s
+KO_MODULE_PATH := $(src)
+KO_MODULE_SRC  :=
+
+KO_MODULE_SRC += $(wildcard $(KO_MODULE_PATH)/*.c)
+KO_MODULE_SRC += $(wildcard $(KO_MODULE_PATH)/revo/*.c)
+KO_MODULE_SRC += $(wildcard $(KO_MODULE_PATH)/focaltech_flash/*.c)
+KO_MODULE_SRC += $(wildcard $(KO_MODULE_PATH)/../tp_common/*.c)
+
+#
+# Build Options
+#
+ccflags-y += -DDEBUG
+ccflags-y += -I$(KO_MODULE_PATH)/../tp_common/
+
+ifeq ($(SENSOR_HUB_VIRTUAL_PROXIMITY),touchscreen)
+KO_MODULE_SRC += $(wildcard $(KO_MODULE_PATH)/../tp_shub/*.c)
+ccflags-y += -DSENSORHUB_PROXIMITY_TOUCHSCREEN
+obj-y += revo_sensorhub.o
+ccflags-y += -I$(KO_MODULE_PATH)/../tp_shub/ -I$(BSP_KERNEL_PATH)/drivers/iio/sprd_hub/
+endif
+
+ifneq ($(filter $(BOARD_TOUCHSCREEN_FOCALTECH), FT8006 FT8009 FT8006AN),)
+ccflags-y += -DREVO_CHIP_TYPE_$(BOARD_TOUCHSCREEN_FOCALTECH)
+endif
+
+#
+# Final Objects
+#
+obj-m := $(KO_MODULE_NAME).o
+$(KO_MODULE_NAME)-y := $(patsubst $(src)/%.c,%.o,$(KO_MODULE_SRC))
+
+# Comment it if the only object file has the same name with module
+# $(KO_MODULE_NAME)-y := $(patsubst $(src)/%.c,%.o,$(KO_MODULE_SRC)) gsl_point_id.o
+# $(obj)/gsl_point_id.o: $(src)/gsl_point_id
+# 	cp $(src)/gsl_point_id $(obj)/gsl_point_id.o
+
+
+
+

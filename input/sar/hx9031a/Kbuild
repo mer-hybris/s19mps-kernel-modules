@@ -1,0 +1,32 @@
+#
+# hx9031.ko
+#
+# Kbuild: for kernel building external module
+#
+# Note:
+# - Please refer to modules/sample/Kbuild to find out what should be
+#   done is this Kbuild file
+#
+
+#
+# Source List
+#
+
+KO_MODULE_NAME := hx9031
+KO_MODULE_PATH := $(src)
+KO_MODULE_SRC  :=
+
+KO_MODULE_SRC += $(wildcard $(KO_MODULE_PATH)/*.c)
+
+#
+# Build Options
+#
+ccflags-y += -DDEBUG
+
+
+#
+# Final Objects
+#
+obj-m := $(KO_MODULE_NAME).o
+$(KO_MODULE_NAME)-y := $(patsubst $(src)/%.c,%.o,$(KO_MODULE_SRC))
+

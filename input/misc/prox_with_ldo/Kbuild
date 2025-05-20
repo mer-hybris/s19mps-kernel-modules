@@ -1,0 +1,11 @@
+KO_MODULE_NAME := prox_with_ldo
+KO_MODULE_PATH := $(src)
+KO_MODULE_SRC  :=
+
+KO_MODULE_SRC += $(wildcard $(KO_MODULE_PATH)/*.c)
+
+ccflags-y += -DDEBUG
+
+obj-m := $(KO_MODULE_NAME).o
+$(KO_MODULE_NAME)-y := $(patsubst $(src)/%.c,%.o,$(KO_MODULE_SRC))
+
