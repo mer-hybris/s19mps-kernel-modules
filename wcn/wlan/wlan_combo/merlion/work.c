@@ -71,8 +71,9 @@ static void sprdwl_do_work(struct work_struct *work)
 			return;
 
 		vif = sprdwl_work->vif;
-		netdev_dbg(vif->ndev, "process delayed work: %d\n",
-			   sprdwl_work->id);
+		if (vif)
+			netdev_dbg(vif->ndev, "process delayed work: %d\n",
+				   sprdwl_work->id);
 
 		switch (sprdwl_work->id) {
 		case SPRDWL_WORK_REG_MGMT:
