@@ -303,6 +303,8 @@ static const struct wiphy_wowlan_support sprdwl_wowlan_support = {
 #endif
 
 extern struct sprdwl_intf *g_intf;
+static void sprdwl_cancel_scan(struct sprdwl_vif *vif);
+
 /* Interface related stuff*/
 inline void sprdwl_put_vif(struct sprdwl_vif *vif)
 {
@@ -497,6 +499,7 @@ int sprdwl_uninit_fw(struct sprdwl_vif *vif)
 	}
 
 	if (sprdwl_close_fw(priv, vif->ctx_id, vif->mode)) {
+		priv->fw_stat[vif->mode] = SPRDWL_INTF_OPEN;
 		netdev_err(vif->ndev, "%s failed!\n", __func__);
 		return -EIO;
 	}
@@ -530,6 +533,62 @@ int sprdwl_check_p2p_coex(struct sprdwl_priv *priv)
 		return -1;
 
 	return 0;
+}
+
+/*
+ * Merlion firmware rejects AP open when the P2P device context is open.
+ * Keep the cfg80211 device alive, but release and recreate only its firmware
+ * context around a station -> AP transition.
+ */
+static int sprdwl_pause_p2p_device(struct sprdwl_vif *vif)
+{
+	struct sprdwl_priv *priv = vif->priv;
+
+	if (priv->fw_stat[vif->mode] != SPRDWL_INTF_OPEN)
+		return 0;
+
+	sprdwl_cancel_scan(vif);
+	if (vif->remain_on_channel) {
+		if (sprdwl_cancel_remain_chan(priv, vif->ctx_id,
+					      vif->listen_cookie))
+			return -EIO;
+		sprdwl_report_remain_on_channel_expired(vif);
+	}
+
+	if (sprdwl_close_fw(priv, vif->ctx_id, vif->mode))
+		return -EIO;
+	priv->fw_stat[vif->mode] = SPRDWL_INTF_CLOSE;
+	return 0;
+}
+
+static int sprdwl_resume_p2p_device(struct sprdwl_vif *vif)
+{
+	struct sprdwl_priv *priv = vif->priv;
+	u8 ctx_id = 0;
+	unsigned long mgmt_reg = vif->mgmt_reg;
+	int ret;
+	int i;
+
+	if (priv->fw_stat[vif->mode] == SPRDWL_INTF_OPEN)
+		return 0;
+
+	ret = sprdwl_open_fw(priv, &ctx_id, vif->mode, vif->wdev.address);
+	if (ret)
+		return ret;
+	vif->ctx_id = ctx_id;
+	priv->fw_stat[vif->mode] = SPRDWL_INTF_OPEN;
+
+	for_each_set_bit(i, &mgmt_reg, (IEEE80211_FCTL_STYPE >> 4) + 1) {
+		ret = sprdwl_register_frame(priv, vif->ctx_id, i << 4, 1);
+		if (ret)
+			goto err_close;
+	}
+	return 0;
+
+err_close:
+	if (!sprdwl_close_fw(priv, vif->ctx_id, vif->mode))
+		priv->fw_stat[vif->mode] = SPRDWL_INTF_CLOSE;
+	return ret;
 }
 
 static struct wireless_dev *sprdwl_cfg80211_add_iface(struct wiphy *wiphy,
@@ -601,6 +660,7 @@ static int sprdwl_cfg80211_change_iface(struct wiphy *wiphy,
 					struct vif_params *params)
 {
 	struct sprdwl_vif *vif = netdev_priv(ndev);
+	struct sprdwl_vif *p2p_vif = NULL;
 	enum nl80211_iftype old_type = vif->wdev.iftype;
 	struct sprdwl_intf *intf = g_intf;
 	int ret;
@@ -612,20 +672,34 @@ static int sprdwl_cfg80211_change_iface(struct wiphy *wiphy,
 		return -EOPNOTSUPP;
 	}
 
+	if (old_type == NL80211_IFTYPE_STATION &&
+	    type == NL80211_IFTYPE_AP) {
+		p2p_vif = mode_to_vif(vif->priv, SPRDWL_MODE_P2P_DEVICE);
+		if (p2p_vif) {
+			ret = sprdwl_pause_p2p_device(p2p_vif);
+			if (ret) {
+				sprdwl_put_vif(p2p_vif);
+				return ret;
+			}
+		}
+	}
+
 	if (vif->mode == 0 && ((old_type == NL80211_IFTYPE_STATION && type == NL80211_IFTYPE_AP) ||
 			(old_type == NL80211_IFTYPE_AP && type == NL80211_IFTYPE_STATION))) {
 		pr_info("%s change iface but current mode 0!\n", __func__);
 		pr_info("%s power on wcn (%d time)\n", __func__, atomic_read(&intf->power_cnt));
 		ret = sprdwl_chip_set_power(intf, true);
 		if (ret)
-			return ret;
+			goto restore_p2p;
 
 		pr_info("start to send open softap cmd\n");
 		vif->wdev.iftype = type;
 		ret = sprdwl_init_fw(vif);
 		if (!ret && type == NL80211_IFTYPE_AP)
 			netif_carrier_off(ndev);
-		return ret;
+		if (ret)
+			vif->wdev.iftype = old_type;
+		goto restore_p2p;
 	}
 
 	if (atomic_read(&intf->power_cnt) == 1) {
@@ -648,6 +722,24 @@ static int sprdwl_cfg80211_change_iface(struct wiphy *wiphy,
 
 	if (!ret && type == NL80211_IFTYPE_AP)
 		netif_carrier_off(ndev);
+
+restore_p2p:
+	if (p2p_vif) {
+		int p2p_ret = sprdwl_resume_p2p_device(p2p_vif);
+
+		if (!ret && p2p_ret) {
+			/* Preserve the error even if restoring the old type succeeds. */
+			ret = p2p_ret;
+			if (!sprdwl_uninit_fw(vif)) {
+				vif->wdev.iftype = old_type;
+				if (sprdwl_init_fw(vif))
+					netdev_err(ndev, "failed to restore interface type\n");
+				if (sprdwl_resume_p2p_device(p2p_vif))
+					netdev_err(ndev, "failed to restore P2P device\n");
+			}
+		}
+		sprdwl_put_vif(p2p_vif);
+	}
 
 	return ret;
 }
@@ -2770,6 +2862,7 @@ static int sprdwl_cfg80211_remain_on_channel(struct wiphy *wiphy,
 				 channel_type, duration, cookie);
 	if (ret)
 		return ret;
+	vif->remain_on_channel = true;
 
 	cfg80211_ready_on_channel(wdev, *cookie, chan, duration, GFP_KERNEL);
 
@@ -2915,6 +3008,8 @@ static void sprdwl_cfg80211_mgmt_frame_register(struct wiphy *wiphy,
 void sprdwl_report_remain_on_channel_expired(struct sprdwl_vif *vif)
 {
 	netdev_dbg(vif->ndev, "%s\n", __func__);
+	if (!xchg(&vif->remain_on_channel, false))
+		return;
 
 	cfg80211_remain_on_channel_expired(&vif->wdev, vif->listen_cookie,
 					   &vif->listen_channel, GFP_KERNEL);

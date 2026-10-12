@@ -665,8 +665,12 @@ int sprdwl_cmd_send_recv(struct sprdwl_priv *priv,
 
 	ret = sprdwl_timeout_recv_rsp(priv, timeout);
 	if (ret != -1) {
-		if (rbuf && rlen && *rlen) {
-			hdr = (struct sprdwl_cmd_hdr *)cmd->data;
+		hdr = (struct sprdwl_cmd_hdr *)cmd->data;
+		/* A rejected OPEN must not supply a successful context ID. */
+		if (hdr->status &&
+		    (cmd_id == WIFI_CMD_OPEN || cmd_id == WIFI_CMD_CLOSE))
+			ret = -EIO;
+		if (!ret && rbuf && rlen && *rlen) {
 			plen = le16_to_cpu(hdr->plen) - sizeof(*hdr);
 			*rlen = min(*rlen, plen);
 			memcpy(rbuf, hdr->paydata, *rlen);
@@ -1137,9 +1141,7 @@ int sprdwl_close_fw(struct sprdwl_priv *priv, u8 vif_ctx_id, u8 mode)
 	p = (struct sprdwl_cmd_close *)msg->data;
 	p->mode = mode;
 
-	sprdwl_cmd_send_recv(priv, msg, CMD_WAIT_TIMEOUT, NULL, NULL);
-	/* FIXME - in case of close failure */
-	return 0;
+	return sprdwl_cmd_send_recv(priv, msg, CMD_WAIT_TIMEOUT, NULL, NULL);
 }
 
 int sprdwl_power_save(struct sprdwl_priv *priv, u8 vif_ctx_id,
