@@ -118,6 +118,7 @@ struct sprdwl_vif {
 	/* P2P stuff */
 	struct ieee80211_channel listen_channel;
 	u64 listen_cookie;
+	bool remain_on_channel;
 	u8 ctx_id;
 	struct  list_head  scan_head_ptr;
 #ifdef ACS_SUPPORT
