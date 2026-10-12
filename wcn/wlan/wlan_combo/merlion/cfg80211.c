@@ -273,13 +273,24 @@ sprdwl_mgmt_stypes[NUM_NL80211_IFTYPES] = {
 static const struct ieee80211_iface_limit sprdwl_iface_limits[] = {
 	{
 		.max = 1,
-		.types = BIT(NL80211_IFTYPE_STATION) |
-			 BIT(NL80211_IFTYPE_AP)
+		.types = BIT(NL80211_IFTYPE_STATION)
 	},
 	{
 		.max = 1,
 		.types = BIT(NL80211_IFTYPE_P2P_CLIENT) |
 			 BIT(NL80211_IFTYPE_P2P_GO)
+	},
+	{
+		.max = 1,
+		.types = BIT(NL80211_IFTYPE_P2P_DEVICE)
+	}
+};
+
+/* AP and P2P groups cannot safely share the firmware group context. */
+static const struct ieee80211_iface_limit sprdwl_ap_iface_limits[] = {
+	{
+		.max = 1,
+		.types = BIT(NL80211_IFTYPE_AP)
 	},
 	{
 		.max = 1,
@@ -293,6 +304,12 @@ static const struct ieee80211_iface_combination sprdwl_iface_combos[] = {
 		 .num_different_channels = 2,
 		 .n_limits = ARRAY_SIZE(sprdwl_iface_limits),
 		 .limits = sprdwl_iface_limits
+	},
+	{
+		 .max_interfaces = 2,
+		 .num_different_channels = 2,
+		 .n_limits = ARRAY_SIZE(sprdwl_ap_iface_limits),
+		 .limits = sprdwl_ap_iface_limits
 	}
 };
 
@@ -528,17 +545,23 @@ static inline int sprdwl_is_valid_iftype(struct wiphy *wiphy,
 
 int sprdwl_check_p2p_coex(struct sprdwl_priv *priv)
 {
-	if (mode_to_vif(priv, SPRDWL_MODE_P2P_CLIENT) ||
-		mode_to_vif(priv, SPRDWL_MODE_P2P_GO))
-		return -1;
+	struct sprdwl_vif *vif;
 
-	return 0;
+	vif = mode_to_vif(priv, SPRDWL_MODE_P2P_CLIENT);
+	if (!vif)
+		vif = mode_to_vif(priv, SPRDWL_MODE_P2P_GO);
+	if (!vif)
+		return 0;
+
+	sprdwl_put_vif(vif);
+	return -EBUSY;
 }
 
 /*
  * Merlion firmware rejects AP open when the P2P device context is open.
  * Keep the cfg80211 device alive, but release and recreate only its firmware
- * context around a station -> AP transition.
+ * context around a station -> AP transition. Return 1 only when the context
+ * was closed and must be restored, 0 when unchanged, or a negative error.
  */
 static int sprdwl_pause_p2p_device(struct sprdwl_vif *vif)
 {
@@ -558,7 +581,7 @@ static int sprdwl_pause_p2p_device(struct sprdwl_vif *vif)
 	if (sprdwl_close_fw(priv, vif->ctx_id, vif->mode))
 		return -EIO;
 	priv->fw_stat[vif->mode] = SPRDWL_INTF_CLOSE;
-	return 0;
+	return 1;
 }
 
 static int sprdwl_resume_p2p_device(struct sprdwl_vif *vif)
@@ -672,14 +695,21 @@ static int sprdwl_cfg80211_change_iface(struct wiphy *wiphy,
 		return -EOPNOTSUPP;
 	}
 
+	/* Reject before closing either the station or P2P device context. */
+	if (type == NL80211_IFTYPE_AP && old_type != type &&
+	    sprdwl_check_p2p_coex(vif->priv))
+		return -EBUSY;
+
 	if (old_type == NL80211_IFTYPE_STATION &&
 	    type == NL80211_IFTYPE_AP) {
 		p2p_vif = mode_to_vif(vif->priv, SPRDWL_MODE_P2P_DEVICE);
 		if (p2p_vif) {
 			ret = sprdwl_pause_p2p_device(p2p_vif);
-			if (ret) {
+			if (ret <= 0) {
 				sprdwl_put_vif(p2p_vif);
-				return ret;
+				p2p_vif = NULL;
+				if (ret < 0)
+					return ret;
 			}
 		}
 	}
